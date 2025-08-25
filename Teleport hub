@@ -12,7 +12,7 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main frame (mini version)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 120, 0, 220) -- medyo tinaasan kasi may extra button
+frame.Size = UDim2.new(0, 120, 0, 220) -- tinaasan kasi may extra button
 frame.Position = UDim2.new(0, 50, 0, 90)
 frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
 frame.BorderSizePixel = 0
@@ -83,7 +83,7 @@ scrollingFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 scrollingFrame.Parent = frame
 Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,8)
 
--- HIDE NAME BUTTON
+-- 🔒 HIDE NAME BUTTON
 local hideBtn = Instance.new("TextButton")
 hideBtn.Size = UDim2.new(1, -6, 0, 20)
 hideBtn.Position = UDim2.new(0,3,1,-50) -- above Leave button
@@ -101,16 +101,23 @@ hideStroke.Thickness = 1
 hideStroke.Parent = hideBtn
 
 local hidden = false
-hideBtn.MouseButton1Click:Connect(function()
-	local head = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head")
-	if head then
-		for _, v in pairs(head:GetChildren()) do
-			if v:IsA("BillboardGui") then
-				hidden = not hidden
-				v.Enabled = not hidden
+
+local function toggleName(hide)
+	if LocalPlayer.Character then
+		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			if hide then
+				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+			else
+				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
 			end
 		end
 	end
+end
+
+hideBtn.MouseButton1Click:Connect(function()
+	hidden = not hidden
+	toggleName(hidden)
 	if hidden then
 		hideBtn.Text = "👁 Show Name"
 		showNotify("🙈 Name Hidden")
@@ -120,7 +127,15 @@ hideBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- AUTO LEAVE BUTTON (1 second)
+-- AUTO REAPPLY HIDE ON RESPAWN
+LocalPlayer.CharacterAdded:Connect(function(char)
+	char:WaitForChild("Humanoid")
+	if hidden then
+		toggleName(true)
+	end
+end)
+
+-- 🚪 AUTO LEAVE BUTTON (1 second)
 local leaveBtn = Instance.new("TextButton")
 leaveBtn.Size = UDim2.new(1, -6, 0, 20)
 leaveBtn.Position = UDim2.new(0,3,1,-25)
@@ -145,7 +160,7 @@ leaveBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- Refresh Player Buttons
+-- 🔄 Refresh Player Buttons
 local function refreshPlayers()
 	scrollingFrame:ClearAllChildren()
 	local y = 0
