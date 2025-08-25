@@ -1,4 +1,4 @@
--- 📌 TP METHODS + AUTO ACCEPT PET GIFT SYSTEM (WITH TOGGLE + NOTIFICATION) + DRAGGABLE GUI
+-- 📌 TP METHODS + PET GIFT SYSTEM (NO AUTO ACCEPT TOGGLE) + NOTIFICATION + DRAGGABLE GUI
 -- LocalScript (for your own Roblox game)
 
 local Players = game:GetService("Players")
@@ -39,35 +39,6 @@ title.BorderSizePixel = 0
 title.Parent = frame
 Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
 
--- Toggle Auto Accept
-local autoAccept = false
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(1, -10, 0, 30)
-toggleBtn.Position = UDim2.new(0,5,0,40)
-toggleBtn.Text = "Auto Accept: OFF"
-toggleBtn.BackgroundColor3 = Color3.fromRGB(50,120,200)
-toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
-toggleBtn.Font = Enum.Font.SourceSansBold
-toggleBtn.TextSize = 16
-toggleBtn.Parent = frame
-
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,8)
-local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Color = Color3.fromRGB(255,255,255)
-toggleStroke.Thickness = 1.5
-toggleStroke.Parent = toggleBtn
-
-toggleBtn.MouseButton1Click:Connect(function()
-    autoAccept = not autoAccept
-    if autoAccept then
-        toggleBtn.Text = "Auto Accept: ON"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
-    else
-        toggleBtn.Text = "Auto Accept: OFF"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(50,120,200)
-    end
-end)
-
 -- ==== NOTIFICATION FUNCTION ====
 local function showNotification(msg, color)
     local notif = Instance.new("TextLabel")
@@ -92,25 +63,18 @@ local function showNotification(msg, color)
     end)
 end
 
--- ==== AUTO ACCEPT PET GIFT SYSTEM (LEGIT EXAMPLE) ====
--- Hanapin ang RemoteEvent (na ikaw dev ang gumawa sa ReplicatedStorage)
+-- ==== PET GIFT SYSTEM (NO AUTO ACCEPT) ====
 local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent")
 
 if giftEvent and giftEvent:IsA("RemoteEvent") then
     print("✅ GiftEvent found at path:", giftEvent:GetFullName())
 
-    -- Kapag may dumating na gift mula server
     giftEvent.OnClientEvent:Connect(function(senderName, giftName)
         print("📦 Gift received:", senderName, giftName)
 
-        if autoAccept then
-            giftEvent:FireServer("accept", senderName, giftName)
-            print("✅ AUTO ACCEPTED ".. giftName .." from ".. senderName)
-            showNotification("🎁 AUTO ACCEPTED: ".. giftName .." from ".. senderName, Color3.fromRGB(0,170,80))
-        else
-            print("❌ Gift ignored from ".. senderName .." (".. giftName ..")")
-            showNotification("📦 GIFT IGNORED: ".. giftName .." from ".. senderName, Color3.fromRGB(255,140,0))
-        end
+        -- Laging IGNORED kasi wala na auto accept
+        print("❌ Gift ignored from ".. senderName .." (".. giftName ..")")
+        showNotification("📦 GIFT IGNORED: ".. giftName .." from ".. senderName, Color3.fromRGB(255,140,0))
     end)
 else
     warn("⚠️ GiftEvent not found. Make sure you created one in ReplicatedStorage.")
