@@ -1,4 +1,4 @@
--- 📌 TELEPORT HUB + AUTO ACCEPT GIFT SYSTEM (WITH TOGGLE + NOTIFICATION) + DRAGGABLE GUI
+-- 📌 TP METHODS + AUTO ACCEPT PET GIFT SYSTEM (WITH TOGGLE + NOTIFICATION) + DRAGGABLE GUI
 -- LocalScript (StarterPlayerScripts or StarterGui)
 
 local Players = game:GetService("Players")
@@ -7,25 +7,21 @@ local LocalPlayer = Players.LocalPlayer
 
 -- ==== UI SETUP ====
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TeleportHub"
+screenGui.Name = "TPMethods"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main frame
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 240, 0, 380)
 frame.Position = UDim2.new(0, 40, 0, 120)
-frame.BackgroundColor3 = Color3.fromRGB(0, 85, 170) -- 🔵 blue background
+frame.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
 frame.BorderSizePixel = 0
-frame.Active = true 
-frame.Draggable = true 
+frame.Active = true
+frame.Draggable = true
 frame.Parent = screenGui
 
--- Rounded corners
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0,12)
-corner.Parent = frame
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
--- White outline (UIStroke)
 local frameStroke = Instance.new("UIStroke")
 frameStroke.Color = Color3.fromRGB(255,255,255)
 frameStroke.Thickness = 2
@@ -47,17 +43,14 @@ shadow.Parent = frame
 -- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 35)
-title.Text = "Teleport Hub"
+title.Text = "TP Methods"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 20
-title.BackgroundColor3 = Color3.fromRGB(0, 65, 140) 
+title.BackgroundColor3 = Color3.fromRGB(0, 65, 140)
 title.BorderSizePixel = 0
 title.Parent = frame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0,12)
-titleCorner.Parent = title
+Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
 
 -- Auto Accept Toggle Button
 local autoAccept = false
@@ -71,10 +64,7 @@ toggleBtn.Font = Enum.Font.SourceSansBold
 toggleBtn.TextSize = 16
 toggleBtn.Parent = frame
 
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0,8)
-toggleCorner.Parent = toggleBtn
-
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,8)
 local toggleStroke = Instance.new("UIStroke")
 toggleStroke.Color = Color3.fromRGB(255,255,255)
 toggleStroke.Thickness = 1.5
@@ -84,10 +74,10 @@ toggleBtn.MouseButton1Click:Connect(function()
     autoAccept = not autoAccept
     if autoAccept then
         toggleBtn.Text = "Auto Accept: ON"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255) 
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
     else
         toggleBtn.Text = "Auto Accept: OFF"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(50,120,200) 
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50,120,200)
     end
 end)
 
@@ -101,9 +91,7 @@ scrollingFrame.BackgroundTransparency = 0.2
 scrollingFrame.BackgroundColor3 = Color3.fromRGB(0,65,140)
 scrollingFrame.Parent = frame
 
-local scrollCorner = Instance.new("UICorner")
-scrollCorner.CornerRadius = UDim.new(0,8)
-scrollCorner.Parent = scrollingFrame
+Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,8)
 
 -- Function to refresh player list
 local function refreshPlayers()
@@ -121,16 +109,12 @@ local function refreshPlayers()
             btn.TextSize = 16
             btn.Parent = scrollingFrame
 
-            local btnCorner = Instance.new("UICorner")
-            btnCorner.CornerRadius = UDim.new(0,6)
-            btnCorner.Parent = btn
-
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
             local btnStroke = Instance.new("UIStroke")
             btnStroke.Color = Color3.fromRGB(255,255,255)
             btnStroke.Thickness = 1
             btnStroke.Parent = btn
 
-            -- Teleport logic
             btn.MouseButton1Click:Connect(function()
                 if LocalPlayer.Character and player.Character then
                     local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -152,11 +136,11 @@ Players.PlayerRemoving:Connect(refreshPlayers)
 refreshPlayers()
 
 -- ==== NOTIFICATION FUNCTION ====
-local function showNotification(msg)
+local function showNotification(msg, color)
     local notif = Instance.new("TextLabel")
-    notif.Size = UDim2.new(0, 200, 0, 40)
-    notif.Position = UDim2.new(0.5, -100, 0, 20)
-    notif.BackgroundColor3 = Color3.fromRGB(0, 150, 80) -- green
+    notif.Size = UDim2.new(0, 220, 0, 40)
+    notif.Position = UDim2.new(0.5, -110, 0, 20)
+    notif.BackgroundColor3 = color or Color3.fromRGB(0, 150, 80)
     notif.TextColor3 = Color3.fromRGB(255, 255, 255)
     notif.Font = Enum.Font.SourceSansBold
     notif.TextSize = 18
@@ -164,12 +148,8 @@ local function showNotification(msg)
     notif.BackgroundTransparency = 0
     notif.Parent = screenGui
     notif.ZIndex = 10
+    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 10)
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = notif
-
-    -- fade out after 3 seconds
     task.delay(3, function()
         for i = 0, 1, 0.1 do
             notif.BackgroundTransparency = i
@@ -180,28 +160,36 @@ local function showNotification(msg)
     end)
 end
 
--- ==== AUTO ACCEPT GIFT SYSTEM (with toggle + notif) ====
--- ⚠️ Palitan ang "GiftEvent" kung iba ang pangalan ng tunay na RemoteEvent ng laro
-local giftEvent = ReplicatedStorage:WaitForChild("GiftEvent", 10)
+-- ==== AUTO ACCEPT PET GIFT SYSTEM ====
+local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent", true)
 
 if giftEvent and giftEvent:IsA("RemoteEvent") then
-    print("✅ GiftEvent found in ReplicatedStorage.")
+    print("✅ GiftEvent found at path:", giftEvent:GetFullName())
 
-    giftEvent.OnClientEvent:Connect(function(sender, gift)
-        print("📦 Gift received from ".. tostring(sender.Name) ..": ".. tostring(gift))
+    giftEvent.OnClientEvent:Connect(function(...)
+        local args = {...}
+        print("📦 Gift received:", unpack(args))
+
+        local senderName, giftName = "Unknown Sender", "Unknown Gift"
+        for _, arg in ipairs(args) do
+            if typeof(arg) == "Instance" and arg:IsA("Player") then
+                senderName = arg.Name
+            elseif typeof(arg) == "string" then
+                giftName = arg
+            elseif typeof(arg) == "table" and arg.Name then
+                giftName = arg.Name
+            end
+        end
+
         if autoAccept then
-            giftEvent:FireServer("accept", sender, gift)
-            print("✅ Auto accepted gift from ".. sender.Name)
-            showNotification("🎁 Accepted gift from ".. sender.Name)
+            giftEvent:FireServer(unpack(args))
+            print("✅ AUTO ACCEPTED ".. giftName .." from ".. senderName)
+            showNotification("🎁 AUTO ACCEPTED: ".. giftName .." from ".. senderName, Color3.fromRGB(0,170,80))
         else
-            print("❌ Auto accept is OFF. Gift ignored.")
+            print("❌ Gift ignored from ".. senderName .." (".. giftName ..")")
+            showNotification("📦 GIFT IGNORED: ".. giftName .." from ".. senderName, Color3.fromRGB(255,140,0))
         end
     end)
 else
-    warn("❌ GiftEvent not found in ReplicatedStorage. Check the actual RemoteEvent name!")
-    for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
-        if v:IsA("RemoteEvent") then
-            print("🔎 Found RemoteEvent:", v.Name)
-        end
-    end
+    warn("❌ GiftEvent not found. Double-check path in ReplicatedStorage.")
 end
