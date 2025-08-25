@@ -1,4 +1,4 @@
--- ✨ VIP PREMIUM TELEPORT HUB (MINI VERSION WITH GLOW TITLE + NOTIFICATION + 1s AUTO LEAVE)
+-- ✨ VIP PREMIUM TELEPORT HUB (MINI VERSION WITH GLOW TITLE + NOTIFICATION + 1s AUTO LEAVE + HIDE NAME)
 -- LocalScript (StarterPlayerScripts or StarterGui)
 
 local Players = game:GetService("Players")
@@ -12,7 +12,7 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main frame (mini version)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 120, 0, 200) -- HALF size
+frame.Size = UDim2.new(0, 120, 0, 220) -- medyo tinaasan kasi may extra button
 frame.Position = UDim2.new(0, 50, 0, 90)
 frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
 frame.BorderSizePixel = 0
@@ -74,7 +74,7 @@ end
 
 -- Player List
 local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Size = UDim2.new(1, -6, 1, -60)
+scrollingFrame.Size = UDim2.new(1, -6, 1, -80)
 scrollingFrame.Position = UDim2.new(0,3,0,28)
 scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
 scrollingFrame.ScrollBarThickness = 4
@@ -82,6 +82,43 @@ scrollingFrame.BackgroundTransparency = 0.3
 scrollingFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 scrollingFrame.Parent = frame
 Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,8)
+
+-- HIDE NAME BUTTON
+local hideBtn = Instance.new("TextButton")
+hideBtn.Size = UDim2.new(1, -6, 0, 20)
+hideBtn.Position = UDim2.new(0,3,1,-50) -- above Leave button
+hideBtn.Text = "🙈 Hide Name"
+hideBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+hideBtn.TextColor3 = Color3.fromRGB(255,215,0)
+hideBtn.Font = Enum.Font.GothamSemibold
+hideBtn.TextSize = 11
+hideBtn.Parent = frame
+Instance.new("UICorner", hideBtn).CornerRadius = UDim.new(0,8)
+
+local hideStroke = Instance.new("UIStroke")
+hideStroke.Color = Color3.fromRGB(255,215,0)
+hideStroke.Thickness = 1
+hideStroke.Parent = hideBtn
+
+local hidden = false
+hideBtn.MouseButton1Click:Connect(function()
+	local head = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head")
+	if head then
+		for _, v in pairs(head:GetChildren()) do
+			if v:IsA("BillboardGui") then
+				hidden = not hidden
+				v.Enabled = not hidden
+			end
+		end
+	end
+	if hidden then
+		hideBtn.Text = "👁 Show Name"
+		showNotify("🙈 Name Hidden")
+	else
+		hideBtn.Text = "🙈 Hide Name"
+		showNotify("👁 Name Visible")
+	end
+end)
 
 -- AUTO LEAVE BUTTON (1 second)
 local leaveBtn = Instance.new("TextButton")
@@ -123,7 +160,6 @@ local function refreshPlayers()
 			btn.Font = Enum.Font.GothamBold
 			btn.TextSize = 10
 			btn.Parent = scrollingFrame
-
 			Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
 			btn.MouseButton1Click:Connect(function()
