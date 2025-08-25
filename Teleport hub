@@ -27,19 +27,6 @@ frameStroke.Color = Color3.fromRGB(255,255,255)
 frameStroke.Thickness = 2
 frameStroke.Parent = frame
 
--- Drop shadow
-local shadow = Instance.new("ImageLabel")
-shadow.Size = UDim2.new(1,20,1,20)
-shadow.Position = UDim2.new(0,-10,0,-10)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageColor3 = Color3.fromRGB(0,0,0)
-shadow.ImageTransparency = 0.5
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10,10,118,118)
-shadow.ZIndex = 0
-shadow.Parent = frame
-
 -- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 35)
@@ -52,7 +39,7 @@ title.BorderSizePixel = 0
 title.Parent = frame
 Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
 
--- Auto Accept Toggle Button
+-- Toggle Auto Accept
 local autoAccept = false
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(1, -10, 0, 30)
@@ -81,60 +68,6 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Scrolling list for players
-local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Size = UDim2.new(1, -10, 1, -80)
-scrollingFrame.Position = UDim2.new(0,5,0,75)
-scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
-scrollingFrame.ScrollBarThickness = 6
-scrollingFrame.BackgroundTransparency = 0.2
-scrollingFrame.BackgroundColor3 = Color3.fromRGB(0,65,140)
-scrollingFrame.Parent = frame
-
-Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,8)
-
--- Function to refresh player list
-local function refreshPlayers()
-    scrollingFrame:ClearAllChildren()
-    local y = 0
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, -5, 0, 30)
-            btn.Position = UDim2.new(0,0,0,y)
-            btn.Text = "Teleport to " .. player.Name
-            btn.BackgroundColor3 = Color3.fromRGB(0,100,200)
-            btn.TextColor3 = Color3.fromRGB(255,255,255)
-            btn.Font = Enum.Font.SourceSans
-            btn.TextSize = 16
-            btn.Parent = scrollingFrame
-
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
-            local btnStroke = Instance.new("UIStroke")
-            btnStroke.Color = Color3.fromRGB(255,255,255)
-            btnStroke.Thickness = 1
-            btnStroke.Parent = btn
-
-            btn.MouseButton1Click:Connect(function()
-                if LocalPlayer.Character and player.Character then
-                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    local targetHrp = player.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp and targetHrp then
-                        hrp.CFrame = targetHrp.CFrame + Vector3.new(0,3,0)
-                    end
-                end
-            end)
-
-            y = y + 35
-        end
-    end
-    scrollingFrame.CanvasSize = UDim2.new(0,0,0,y)
-end
-
-Players.PlayerAdded:Connect(refreshPlayers)
-Players.PlayerRemoving:Connect(refreshPlayers)
-refreshPlayers()
-
 -- ==== NOTIFICATION FUNCTION ====
 local function showNotification(msg, color)
     local notif = Instance.new("TextLabel")
@@ -145,7 +78,6 @@ local function showNotification(msg, color)
     notif.Font = Enum.Font.SourceSansBold
     notif.TextSize = 18
     notif.Text = msg
-    notif.BackgroundTransparency = 0
     notif.Parent = screenGui
     notif.ZIndex = 10
     Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 10)
@@ -161,6 +93,7 @@ local function showNotification(msg, color)
 end
 
 -- ==== AUTO ACCEPT PET GIFT SYSTEM ====
+-- Try to find GiftEvent
 local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent", true)
 
 if giftEvent and giftEvent:IsA("RemoteEvent") then
@@ -191,5 +124,10 @@ if giftEvent and giftEvent:IsA("RemoteEvent") then
         end
     end)
 else
-    warn("❌ GiftEvent not found. Double-check path in ReplicatedStorage.")
+    warn("⚠️ GiftEvent not found. Listing all RemoteEvents in ReplicatedStorage:")
+    for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+        if obj:IsA("RemoteEvent") then
+            print(" - ".. obj:GetFullName())
+        end
+    end
 end
