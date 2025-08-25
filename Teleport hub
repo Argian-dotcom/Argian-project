@@ -1,4 +1,4 @@
--- 📌 TELEPORT HUB + AUTO ACCEPT GIFT SYSTEM (WITH TOGGLE) + DRAGGABLE GUI
+-- 📌 TELEPORT HUB + AUTO ACCEPT GIFT SYSTEM (WITH TOGGLE + NOTIFICATION) + DRAGGABLE GUI
 -- LocalScript (StarterPlayerScripts or StarterGui)
 
 local Players = game:GetService("Players")
@@ -151,21 +151,57 @@ Players.PlayerAdded:Connect(refreshPlayers)
 Players.PlayerRemoving:Connect(refreshPlayers)
 refreshPlayers()
 
--- ==== AUTO ACCEPT GIFT SYSTEM (with toggle) ====
-local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent")
-if not giftEvent then
-    giftEvent = Instance.new("RemoteEvent")
-    giftEvent.Name = "GiftEvent"
-    giftEvent.Parent = ReplicatedStorage
-    warn("⚠️ GiftEvent not found, so I created one in ReplicatedStorage.")
+-- ==== NOTIFICATION FUNCTION ====
+local function showNotification(msg)
+    local notif = Instance.new("TextLabel")
+    notif.Size = UDim2.new(0, 200, 0, 40)
+    notif.Position = UDim2.new(0.5, -100, 0, 20)
+    notif.BackgroundColor3 = Color3.fromRGB(0, 150, 80) -- green
+    notif.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notif.Font = Enum.Font.SourceSansBold
+    notif.TextSize = 18
+    notif.Text = msg
+    notif.BackgroundTransparency = 0
+    notif.Parent = screenGui
+    notif.ZIndex = 10
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = notif
+
+    -- fade out after 3 seconds
+    task.delay(3, function()
+        for i = 0, 1, 0.1 do
+            notif.BackgroundTransparency = i
+            notif.TextTransparency = i
+            task.wait(0.05)
+        end
+        notif:Destroy()
+    end)
 end
 
-giftEvent.OnClientEvent:Connect(function(sender, gift)
-    print("📦 Gift received from ".. tostring(sender.Name) ..": ".. tostring(gift))
-    if autoAccept then
-        giftEvent:FireServer("accept", sender, gift)
-        print("✅ Auto accepted gift from ".. sender.Name)
-    else
-        print("❌ Auto accept is OFF. Gift ignored.")
+-- ==== AUTO ACCEPT GIFT SYSTEM (with toggle + notif) ====
+-- ⚠️ Palitan ang "GiftEvent" kung iba ang pangalan ng tunay na RemoteEvent ng laro
+local giftEvent = ReplicatedStorage:WaitForChild("GiftEvent", 10)
+
+if giftEvent and giftEvent:IsA("RemoteEvent") then
+    print("✅ GiftEvent found in ReplicatedStorage.")
+
+    giftEvent.OnClientEvent:Connect(function(sender, gift)
+        print("📦 Gift received from ".. tostring(sender.Name) ..": ".. tostring(gift))
+        if autoAccept then
+            giftEvent:FireServer("accept", sender, gift)
+            print("✅ Auto accepted gift from ".. sender.Name)
+            showNotification("🎁 Accepted gift from ".. sender.Name)
+        else
+            print("❌ Auto accept is OFF. Gift ignored.")
+        end
+    end)
+else
+    warn("❌ GiftEvent not found in ReplicatedStorage. Check the actual RemoteEvent name!")
+    for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
+        if v:IsA("RemoteEvent") then
+            print("🔎 Found RemoteEvent:", v.Name)
+        end
     end
-end)
+end
