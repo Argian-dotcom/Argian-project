@@ -1,3 +1,4 @@
+-- ✨ VIP PREMIUM TELEPORT HUB (MINI VERSION WITH GLOW TITLE + NOTIFICATION + 1s AUTO LEAVE)
 -- LocalScript (StarterPlayerScripts or StarterGui)
 
 local Players = game:GetService("Players")
@@ -6,186 +7,144 @@ local TweenService = game:GetService("TweenService")
 
 -- ==== UI SETUP ====
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TeleportHub"
-screenGui.IgnoreGuiInset = true
-screenGui.ResetOnSpawn = false
+screenGui.Name = "VIP_TeleportHub"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Main frame (mini version)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 360)
-frame.Position = UDim2.new(0.5, -140, 0.5, -180)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+frame.Size = UDim2.new(0, 120, 0, 200) -- HALF size
+frame.Position = UDim2.new(0, 50, 0, 90)
+frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
 frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+frame.Active = true 
+frame.Draggable = true 
 frame.Parent = screenGui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 16)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
--- Shadow
-local shadow = Instance.new("ImageLabel")
-shadow.Size = UDim2.new(1, 40, 1, 40)
-shadow.Position = UDim2.new(0, -20, 0, -20)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-shadow.ImageTransparency = 0.5
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10,10,118,118)
-shadow.Parent = frame
-shadow.ZIndex = 0
+-- Gold glowing stroke
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(255, 215, 0)
+frameStroke.Thickness = 2
+frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+frameStroke.Parent = frame
 
--- Title Bar
+-- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -50, 0, 45)
-title.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-title.Text = "🌍 Premium Teleport Hub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
+title.Size = UDim2.new(1, 0, 0, 25)
+title.Text = "👑 VIP Hub 👑"
+title.TextColor3 = Color3.fromRGB(255,215,0)
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 12
+title.BackgroundColor3 = Color3.fromRGB(25,25,25)
+title.BorderSizePixel = 0
 title.Parent = frame
-Instance.new("UICorner", title).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", title).CornerRadius = UDim.new(0,10)
 
--- Close Button
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 45, 0, 45)
-closeBtn.Position = UDim2.new(1, -45, 0, 0)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 20
-closeBtn.Parent = frame
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 12)
+-- Glow animation
+task.spawn(function()
+	while true do
+		local tween1 = TweenService:Create(title, TweenInfo.new(1, Enum.EasingStyle.Quad), {TextColor3 = Color3.fromRGB(255, 255, 180)})
+		local tween2 = TweenService:Create(title, TweenInfo.new(1, Enum.EasingStyle.Quad), {TextColor3 = Color3.fromRGB(255, 215, 0)})
+		tween1:Play()
+		tween1.Completed:Wait()
+		tween2:Play()
+		tween2.Completed:Wait()
+	end
+end)
 
--- Player List
-local playerList = Instance.new("ScrollingFrame")
-playerList.Size = UDim2.new(1, -20, 1, -110)
-playerList.Position = UDim2.new(0, 10, 0, 50)
-playerList.CanvasSize = UDim2.new(0,0,0,0)
-playerList.ScrollBarThickness = 6
-playerList.BackgroundTransparency = 1
-playerList.Parent = frame
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = playerList
-UIListLayout.Padding = UDim.new(0, 6)
+-- ✅ Notification Label
+local notify = Instance.new("TextLabel")
+notify.Size = UDim2.new(1, -8, 0, 16)
+notify.Position = UDim2.new(0, 4, 0, -20)
+notify.BackgroundTransparency = 1
+notify.TextColor3 = Color3.fromRGB(255, 223, 120)
+notify.Font = Enum.Font.GothamBold
+notify.TextSize = 10
+notify.Text = ""
+notify.Parent = frame
 
--- Leave Button
-local leaveBtn = Instance.new("TextButton")
-leaveBtn.Size = UDim2.new(1, -20, 0, 40)
-leaveBtn.Position = UDim2.new(0, 10, 1, -50)
-leaveBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-leaveBtn.Text = "🚪 Auto Leave Game"
-leaveBtn.TextColor3 = Color3.new(1,1,1)
-leaveBtn.Font = Enum.Font.GothamBold
-leaveBtn.TextSize = 18
-leaveBtn.Parent = frame
-Instance.new("UICorner", leaveBtn).CornerRadius = UDim.new(0, 10)
-
--- ==== NOTIFICATION SYSTEM ====
-local function ShowNotification(msg, success)
-	local notif = Instance.new("TextLabel")
-	notif.Size = UDim2.new(0, 260, 0, 40)
-	notif.Position = UDim2.new(0.5, -130, 0, -60)
-	notif.BackgroundColor3 = success and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
-	notif.Text = msg
-	notif.TextColor3 = Color3.new(1,1,1)
-	notif.Font = Enum.Font.GothamBold
-	notif.TextSize = 18
-	notif.Parent = screenGui
-	notif.ZIndex = 10
-	Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 12)
-
-	-- Slide in
-	TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -130, 0, 20)}):Play()
-
-	-- Fade out
+local function showNotify(msg)
+	notify.Text = msg
 	task.delay(2, function()
-		TweenService:Create(notif, TweenInfo.new(0.5), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-		game:GetService("Debris"):AddItem(notif, 1)
+		if notify.Text == msg then
+			notify.Text = ""
+		end
 	end)
 end
 
--- ==== TELEPORT FUNCTION ====
-local function TeleportToPlayer(playerName)
-	local targetPlayer = Players:FindFirstChild(playerName)
-	if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-		local targetHRP = targetPlayer.Character.HumanoidRootPart
-		local myChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-		local myHRP = myChar:WaitForChild("HumanoidRootPart")
+-- Player List
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, -6, 1, -60)
+scrollingFrame.Position = UDim2.new(0,3,0,28)
+scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
+scrollingFrame.ScrollBarThickness = 4
+scrollingFrame.BackgroundTransparency = 0.3
+scrollingFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+scrollingFrame.Parent = frame
+Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,8)
 
-		myHRP.CFrame = targetHRP.CFrame + Vector3.new(2,0,2)
-		ShowNotification("✅ Teleported to " .. playerName, true)
-	else
-		ShowNotification("❌ Failed to teleport!", false)
-	end
-end
+-- AUTO LEAVE BUTTON (1 second)
+local leaveBtn = Instance.new("TextButton")
+leaveBtn.Size = UDim2.new(1, -6, 0, 20)
+leaveBtn.Position = UDim2.new(0,3,1,-25)
+leaveBtn.Text = "🚪 Leave (1s)"
+leaveBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+leaveBtn.TextColor3 = Color3.fromRGB(255,215,0)
+leaveBtn.Font = Enum.Font.GothamSemibold
+leaveBtn.TextSize = 11
+leaveBtn.Parent = frame
+Instance.new("UICorner", leaveBtn).CornerRadius = UDim.new(0,8)
 
--- ==== CREATE PLAYER BUTTONS ====
-local function RefreshPlayerList()
-	for _,child in pairs(playerList:GetChildren()) do
-		if child:IsA("TextButton") then
-			child:Destroy()
-		end
-	end
+local leaveStroke = Instance.new("UIStroke")
+leaveStroke.Color = Color3.fromRGB(255,215,0)
+leaveStroke.Thickness = 1
+leaveStroke.Parent = leaveBtn
 
-	for _,player in pairs(Players:GetPlayers()) do
+leaveBtn.MouseButton1Click:Connect(function()
+	showNotify("⏳ Leaving in 1s...")
+	task.delay(1, function()
+		showNotify("👋 Left!")
+		LocalPlayer:Kick("You left the game using VIP Premium Hub")
+	end)
+end)
+
+-- Refresh Player Buttons
+local function refreshPlayers()
+	scrollingFrame:ClearAllChildren()
+	local y = 0
+	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer then
 			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(1, -5, 0, 35)
-			btn.Text = "👤 " .. player.Name
-			btn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-			btn.TextColor3 = Color3.fromRGB(255,255,255)
-			btn.Font = Enum.Font.GothamSemibold
-			btn.TextSize = 16
-			btn.Parent = playerList
-			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+			btn.Size = UDim2.new(1, -2, 0, 18)
+			btn.Position = UDim2.new(0,0,0,y)
+			btn.Text = "🚀 " .. player.Name
+			btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+			btn.TextColor3 = Color3.fromRGB(255,215,0)
+			btn.Font = Enum.Font.GothamBold
+			btn.TextSize = 10
+			btn.Parent = scrollingFrame
 
-			-- Hover animation
-			btn.MouseEnter:Connect(function()
-				TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 120, 255)}):Play()
-			end)
-			btn.MouseLeave:Connect(function()
-				TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 70)}):Play()
-			end)
+			Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
 			btn.MouseButton1Click:Connect(function()
-				TeleportToPlayer(player.Name)
+				if LocalPlayer.Character and player.Character then
+					local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+					local targetHrp = player.Character:FindFirstChild("HumanoidRootPart")
+					if hrp and targetHrp then
+						hrp.CFrame = targetHrp.CFrame + Vector3.new(0,2,0)
+						showNotify("✅ Teleported to " .. player.Name)
+					else
+						showNotify("❌ Failed!")
+					end
+				end
 			end)
+
+			y = y + 20
 		end
 	end
-	playerList.CanvasSize = UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y + 10)
+	scrollingFrame.CanvasSize = UDim2.new(0,0,0,y)
 end
 
--- ==== AUTO LEAVE FUNCTION WITH 2s TIMER ====
-leaveBtn.MouseButton1Click:Connect(function()
-	local countdown = Instance.new("TextLabel")
-	countdown.Size = UDim2.new(0, 260, 0, 40)
-	countdown.Position = UDim2.new(0.5, -130, 0, -60)
-	countdown.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-	countdown.TextColor3 = Color3.new(1,1,1)
-	countdown.Font = Enum.Font.GothamBold
-	countdown.TextSize = 18
-	countdown.Text = "🚪 Leaving in 2..."
-	countdown.Parent = screenGui
-	countdown.ZIndex = 10
-	Instance.new("UICorner", countdown).CornerRadius = UDim.new(0, 12)
-
-	TweenService:Create(countdown, TweenInfo.new(0.3), {Position = UDim2.new(0.5, -130, 0, 20)}):Play()
-
-	for i = 2,1,-1 do
-		countdown.Text = "🚪 Leaving in " .. i .. "..."
-		task.wait(1)
-	end
-
-	LocalPlayer:Kick("You left the game. (Auto Leave)")
-end)
-
--- ==== CLOSE BUTTON ====
-closeBtn.MouseButton1Click:Connect(function()
-	frame.Visible = not frame.Visible
-end)
-
--- ==== UPDATE PLAYER LIST DYNAMICALLY ====
-Players.PlayerAdded:Connect(RefreshPlayerList)
-Players.PlayerRemoving:Connect(RefreshPlayerList)
-RefreshPlayerList()
+Players.PlayerAdded:Connect(refreshPlayers)
+Players.PlayerRemoving:Connect(refreshPlayers)
+refreshPlayers()
