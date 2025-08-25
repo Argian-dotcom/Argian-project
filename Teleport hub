@@ -3,7 +3,6 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==== UI SETUP ====
@@ -13,11 +12,37 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 360)
-frame.Position = UDim2.new(0, 20, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.Size = UDim2.new(0, 240, 0, 380)
+frame.Position = UDim2.new(0, 40, 0, 120)
+frame.BackgroundColor3 = Color3.fromRGB(0, 85, 170) -- 🔵 blue background
 frame.BorderSizePixel = 0
+frame.Active = true 
+frame.Draggable = true 
 frame.Parent = screenGui
+
+-- Rounded corners
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,12)
+corner.Parent = frame
+
+-- White outline (UIStroke)
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(255,255,255)
+frameStroke.Thickness = 2
+frameStroke.Parent = frame
+
+-- Drop shadow
+local shadow = Instance.new("ImageLabel")
+shadow.Size = UDim2.new(1,20,1,20)
+shadow.Position = UDim2.new(0,-10,0,-10)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageColor3 = Color3.fromRGB(0,0,0)
+shadow.ImageTransparency = 0.5
+shadow.ScaleType = Enum.ScaleType.Slice
+shadow.SliceCenter = Rect.new(10,10,118,118)
+shadow.ZIndex = 0
+shadow.Parent = frame
 
 -- Title
 local title = Instance.new("TextLabel")
@@ -26,9 +51,13 @@ title.Text = "Teleport Hub"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 20
-title.BackgroundColor3 = Color3.fromRGB(25,25,25)
+title.BackgroundColor3 = Color3.fromRGB(0, 65, 140) 
 title.BorderSizePixel = 0
 title.Parent = frame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0,12)
+titleCorner.Parent = title
 
 -- Auto Accept Toggle Button
 local autoAccept = false
@@ -36,20 +65,29 @@ local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(1, -10, 0, 30)
 toggleBtn.Position = UDim2.new(0,5,0,40)
 toggleBtn.Text = "Auto Accept: OFF"
-toggleBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50,120,200)
 toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
 toggleBtn.Font = Enum.Font.SourceSansBold
 toggleBtn.TextSize = 16
 toggleBtn.Parent = frame
 
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0,8)
+toggleCorner.Parent = toggleBtn
+
+local toggleStroke = Instance.new("UIStroke")
+toggleStroke.Color = Color3.fromRGB(255,255,255)
+toggleStroke.Thickness = 1.5
+toggleStroke.Parent = toggleBtn
+
 toggleBtn.MouseButton1Click:Connect(function()
     autoAccept = not autoAccept
     if autoAccept then
         toggleBtn.Text = "Auto Accept: ON"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255) 
     else
         toggleBtn.Text = "Auto Accept: OFF"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50,120,200) 
     end
 end)
 
@@ -59,8 +97,13 @@ scrollingFrame.Size = UDim2.new(1, -10, 1, -80)
 scrollingFrame.Position = UDim2.new(0,5,0,75)
 scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
 scrollingFrame.ScrollBarThickness = 6
-scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.BackgroundTransparency = 0.2
+scrollingFrame.BackgroundColor3 = Color3.fromRGB(0,65,140)
 scrollingFrame.Parent = frame
+
+local scrollCorner = Instance.new("UICorner")
+scrollCorner.CornerRadius = UDim.new(0,8)
+scrollCorner.Parent = scrollingFrame
 
 -- Function to refresh player list
 local function refreshPlayers()
@@ -72,11 +115,20 @@ local function refreshPlayers()
             btn.Size = UDim2.new(1, -5, 0, 30)
             btn.Position = UDim2.new(0,0,0,y)
             btn.Text = "Teleport to " .. player.Name
-            btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+            btn.BackgroundColor3 = Color3.fromRGB(0,100,200)
             btn.TextColor3 = Color3.fromRGB(255,255,255)
             btn.Font = Enum.Font.SourceSans
             btn.TextSize = 16
             btn.Parent = scrollingFrame
+
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0,6)
+            btnCorner.Parent = btn
+
+            local btnStroke = Instance.new("UIStroke")
+            btnStroke.Color = Color3.fromRGB(255,255,255)
+            btnStroke.Thickness = 1
+            btnStroke.Parent = btn
 
             -- Teleport logic
             btn.MouseButton1Click:Connect(function()
@@ -84,7 +136,7 @@ local function refreshPlayers()
                     local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                     local targetHrp = player.Character:FindFirstChild("HumanoidRootPart")
                     if hrp and targetHrp then
-                        hrp.CFrame = targetHrp.CFrame + Vector3.new(0,3,0) -- teleport on top
+                        hrp.CFrame = targetHrp.CFrame + Vector3.new(0,3,0)
                     end
                 end
             end)
@@ -101,57 +153,19 @@ refreshPlayers()
 
 -- ==== AUTO ACCEPT GIFT SYSTEM (with toggle) ====
 local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent")
-
-if giftEvent then
-    giftEvent.OnClientEvent:Connect(function(sender, gift)
-        print("📦 Gift received from ".. sender.Name ..": ".. gift)
-        if autoAccept then
-            giftEvent:FireServer("accept", sender, gift)
-            print("✅ Auto accepted gift from ".. sender.Name)
-        else
-            print("❌ Auto accept is OFF. Gift ignored.")
-        end
-    end)
-else
-    warn("⚠️ GiftEvent not found in ReplicatedStorage!")
+if not giftEvent then
+    giftEvent = Instance.new("RemoteEvent")
+    giftEvent.Name = "GiftEvent"
+    giftEvent.Parent = ReplicatedStorage
+    warn("⚠️ GiftEvent not found, so I created one in ReplicatedStorage.")
 end
 
--- ==== MAKE FRAME DRAGGABLE ====
-local dragging = false
-local dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    frame.Position = UDim2.new(
-        startPos.X.Scale,
-        startPos.X.Offset + delta.X,
-        startPos.Y.Scale,
-        startPos.Y.Offset + delta.Y
-    )
-end
-
-title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-title.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
+giftEvent.OnClientEvent:Connect(function(sender, gift)
+    print("📦 Gift received from ".. tostring(sender.Name) ..": ".. tostring(gift))
+    if autoAccept then
+        giftEvent:FireServer("accept", sender, gift)
+        print("✅ Auto accepted gift from ".. sender.Name)
+    else
+        print("❌ Auto accept is OFF. Gift ignored.")
     end
 end)
