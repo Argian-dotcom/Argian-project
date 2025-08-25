@@ -1,5 +1,5 @@
 -- 📌 TP METHODS + AUTO ACCEPT PET GIFT SYSTEM (WITH TOGGLE + NOTIFICATION) + DRAGGABLE GUI
--- LocalScript (StarterPlayerScripts or StarterGui)
+-- LocalScript (for your own Roblox game)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -92,30 +92,19 @@ local function showNotification(msg, color)
     end)
 end
 
--- ==== AUTO ACCEPT PET GIFT SYSTEM ====
--- Try to find GiftEvent
-local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent", true)
+-- ==== AUTO ACCEPT PET GIFT SYSTEM (LEGIT EXAMPLE) ====
+-- Hanapin ang RemoteEvent (na ikaw dev ang gumawa sa ReplicatedStorage)
+local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent")
 
 if giftEvent and giftEvent:IsA("RemoteEvent") then
     print("✅ GiftEvent found at path:", giftEvent:GetFullName())
 
-    giftEvent.OnClientEvent:Connect(function(...)
-        local args = {...}
-        print("📦 Gift received:", unpack(args))
-
-        local senderName, giftName = "Unknown Sender", "Unknown Gift"
-        for _, arg in ipairs(args) do
-            if typeof(arg) == "Instance" and arg:IsA("Player") then
-                senderName = arg.Name
-            elseif typeof(arg) == "string" then
-                giftName = arg
-            elseif typeof(arg) == "table" and arg.Name then
-                giftName = arg.Name
-            end
-        end
+    -- Kapag may dumating na gift mula server
+    giftEvent.OnClientEvent:Connect(function(senderName, giftName)
+        print("📦 Gift received:", senderName, giftName)
 
         if autoAccept then
-            giftEvent:FireServer(unpack(args))
+            giftEvent:FireServer("accept", senderName, giftName)
             print("✅ AUTO ACCEPTED ".. giftName .." from ".. senderName)
             showNotification("🎁 AUTO ACCEPTED: ".. giftName .." from ".. senderName, Color3.fromRGB(0,170,80))
         else
@@ -124,10 +113,5 @@ if giftEvent and giftEvent:IsA("RemoteEvent") then
         end
     end)
 else
-    warn("⚠️ GiftEvent not found. Listing all RemoteEvents in ReplicatedStorage:")
-    for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-        if obj:IsA("RemoteEvent") then
-            print(" - ".. obj:GetFullName())
-        end
-    end
+    warn("⚠️ GiftEvent not found. Make sure you created one in ReplicatedStorage.")
 end
