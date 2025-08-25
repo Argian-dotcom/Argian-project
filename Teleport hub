@@ -1,0 +1,89 @@
+-- 📌 TELEPORT HUB + AUTO ACCEPT GIFT SYSTEM
+-- LocalScript (StarterPlayerScripts or StarterGui)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- ==== UI SETUP ====
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TeleportHub"
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Main frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 320)
+frame.Position = UDim2.new(0, 20, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.Text = "Teleport Hub"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
+title.BackgroundColor3 = Color3.fromRGB(25,25,25)
+title.BorderSizePixel = 0
+title.Parent = frame
+
+-- Scrolling list for players
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, -10, 1, -40)
+scrollingFrame.Position = UDim2.new(0,5,0,40)
+scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
+scrollingFrame.ScrollBarThickness = 6
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.Parent = frame
+
+-- Function to refresh player list
+local function refreshPlayers()
+    scrollingFrame:ClearAllChildren()
+    local y = 0
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, -5, 0, 30)
+            btn.Position = UDim2.new(0,0,0,y)
+            btn.Text = "Teleport to " .. player.Name
+            btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+            btn.TextColor3 = Color3.fromRGB(255,255,255)
+            btn.Font = Enum.Font.SourceSans
+            btn.TextSize = 16
+            btn.Parent = scrollingFrame
+
+            -- Teleport logic
+            btn.MouseButton1Click:Connect(function()
+                if LocalPlayer.Character and player.Character then
+                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local targetHrp = player.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp and targetHrp then
+                        hrp.CFrame = targetHrp.CFrame + Vector3.new(0,3,0) -- teleport on top
+                    end
+                end
+            end)
+
+            y = y + 35
+        end
+    end
+    scrollingFrame.CanvasSize = UDim2.new(0,0,0,y)
+end
+
+Players.PlayerAdded:Connect(refreshPlayers)
+Players.PlayerRemoving:Connect(refreshPlayers)
+refreshPlayers()
+
+-- ==== AUTO ACCEPT GIFT SYSTEM ====
+local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent")
+
+if giftEvent then
+    giftEvent.OnClientEvent:Connect(function(sender, gift)
+        print("📦 Gift received from ".. sender.Name ..": ".. gift)
+        -- Auto accept agad
+        giftEvent:FireServer("accept", sender, gift)
+    end)
+else
+    warn("⚠️ GiftEvent not found in ReplicatedStorage!")
+end
