@@ -1,8 +1,9 @@
--- 📌 TELEPORT HUB + AUTO ACCEPT GIFT SYSTEM
+-- 📌 TELEPORT HUB + AUTO ACCEPT GIFT SYSTEM (WITH TOGGLE) + DRAGGABLE GUI
 -- LocalScript (StarterPlayerScripts or StarterGui)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==== UI SETUP ====
@@ -12,7 +13,7 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 320)
+frame.Size = UDim2.new(0, 220, 0, 360)
 frame.Position = UDim2.new(0, 20, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 frame.BorderSizePixel = 0
@@ -29,10 +30,33 @@ title.BackgroundColor3 = Color3.fromRGB(25,25,25)
 title.BorderSizePixel = 0
 title.Parent = frame
 
+-- Auto Accept Toggle Button
+local autoAccept = false
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(1, -10, 0, 30)
+toggleBtn.Position = UDim2.new(0,5,0,40)
+toggleBtn.Text = "Auto Accept: OFF"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 16
+toggleBtn.Parent = frame
+
+toggleBtn.MouseButton1Click:Connect(function()
+    autoAccept = not autoAccept
+    if autoAccept then
+        toggleBtn.Text = "Auto Accept: ON"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
+    else
+        toggleBtn.Text = "Auto Accept: OFF"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
+    end
+end)
+
 -- Scrolling list for players
 local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Size = UDim2.new(1, -10, 1, -40)
-scrollingFrame.Position = UDim2.new(0,5,0,40)
+scrollingFrame.Size = UDim2.new(1, -10, 1, -80)
+scrollingFrame.Position = UDim2.new(0,5,0,75)
 scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
 scrollingFrame.ScrollBarThickness = 6
 scrollingFrame.BackgroundTransparency = 1
@@ -75,15 +99,59 @@ Players.PlayerAdded:Connect(refreshPlayers)
 Players.PlayerRemoving:Connect(refreshPlayers)
 refreshPlayers()
 
--- ==== AUTO ACCEPT GIFT SYSTEM ====
+-- ==== AUTO ACCEPT GIFT SYSTEM (with toggle) ====
 local giftEvent = ReplicatedStorage:FindFirstChild("GiftEvent")
 
 if giftEvent then
     giftEvent.OnClientEvent:Connect(function(sender, gift)
         print("📦 Gift received from ".. sender.Name ..": ".. gift)
-        -- Auto accept agad
-        giftEvent:FireServer("accept", sender, gift)
+        if autoAccept then
+            giftEvent:FireServer("accept", sender, gift)
+            print("✅ Auto accepted gift from ".. sender.Name)
+        else
+            print("❌ Auto accept is OFF. Gift ignored.")
+        end
     end)
 else
     warn("⚠️ GiftEvent not found in ReplicatedStorage!")
 end
+
+-- ==== MAKE FRAME DRAGGABLE ====
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
