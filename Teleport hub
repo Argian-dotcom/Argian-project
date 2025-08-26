@@ -1,4 +1,4 @@
--- ✨ VIP PREMIUM TELEPORT HUB (MINI VERSION WITH GLOW TITLE + NOTIFICATION + 1s AUTO LEAVE + HIDE NAME)
+-- ✨ VIP PREMIUM TELEPORT HUB (BIGGER VERSION + FIXED HIDE NAME + INVISIBLE MODE + 1s AUTO LEAVE)
 -- LocalScript (StarterPlayerScripts or StarterGui)
 
 local Players = game:GetService("Players")
@@ -10,16 +10,16 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "VIP_TeleportHub"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Main frame (mini version)
+-- Main frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 120, 0, 220) -- tinaasan kasi may extra button
-frame.Position = UDim2.new(0, 50, 0, 90)
+frame.Size = UDim2.new(0, 160, 0, 300) -- 🔥 mas mataas kasi may invisible button
+frame.Position = UDim2.new(0, 50, 0, 80)
 frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
 frame.BorderSizePixel = 0
 frame.Active = true 
 frame.Draggable = true 
 frame.Parent = screenGui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
 
 -- Gold glowing stroke
 local frameStroke = Instance.new("UIStroke")
@@ -30,15 +30,15 @@ frameStroke.Parent = frame
 
 -- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 25)
+title.Size = UDim2.new(1, 0, 0, 30)
 title.Text = "👑 VIP Hub 👑"
 title.TextColor3 = Color3.fromRGB(255,215,0)
 title.Font = Enum.Font.GothamBlack
-title.TextSize = 12
+title.TextSize = 16
 title.BackgroundColor3 = Color3.fromRGB(25,25,25)
 title.BorderSizePixel = 0
 title.Parent = frame
-Instance.new("UICorner", title).CornerRadius = UDim.new(0,10)
+Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
 
 -- Glow animation
 task.spawn(function()
@@ -54,12 +54,12 @@ end)
 
 -- ✅ Notification Label
 local notify = Instance.new("TextLabel")
-notify.Size = UDim2.new(1, -8, 0, 16)
-notify.Position = UDim2.new(0, 4, 0, -20)
+notify.Size = UDim2.new(1, -8, 0, 20)
+notify.Position = UDim2.new(0, 4, 0, -22)
 notify.BackgroundTransparency = 1
 notify.TextColor3 = Color3.fromRGB(255, 223, 120)
 notify.Font = Enum.Font.GothamBold
-notify.TextSize = 10
+notify.TextSize = 12
 notify.Text = ""
 notify.Parent = frame
 
@@ -74,26 +74,71 @@ end
 
 -- Player List
 local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Size = UDim2.new(1, -6, 1, -80)
-scrollingFrame.Position = UDim2.new(0,3,0,28)
+scrollingFrame.Size = UDim2.new(1, -8, 1, -130)
+scrollingFrame.Position = UDim2.new(0,4,0,32)
 scrollingFrame.CanvasSize = UDim2.new(0,0,0,0)
-scrollingFrame.ScrollBarThickness = 4
+scrollingFrame.ScrollBarThickness = 5
 scrollingFrame.BackgroundTransparency = 0.3
 scrollingFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 scrollingFrame.Parent = frame
-Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,8)
+Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0,10)
+
+-- 🔮 INVISIBLE BUTTON
+local invisBtn = Instance.new("TextButton")
+invisBtn.Size = UDim2.new(1, -8, 0, 26)
+invisBtn.Position = UDim2.new(0,4,1,-90)
+invisBtn.Text = "🔮 Go Invisible"
+invisBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+invisBtn.TextColor3 = Color3.fromRGB(255,215,0)
+invisBtn.Font = Enum.Font.GothamSemibold
+invisBtn.TextSize = 13
+invisBtn.Parent = frame
+Instance.new("UICorner", invisBtn).CornerRadius = UDim.new(0,10)
+
+local invisStroke = Instance.new("UIStroke")
+invisStroke.Color = Color3.fromRGB(255,215,0)
+invisStroke.Thickness = 1
+invisStroke.Parent = invisBtn
+
+local invisible = false
+
+local function setInvisible(state)
+	if LocalPlayer.Character then
+		for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				if part.Name ~= "HumanoidRootPart" then
+					part.Transparency = state and 1 or 0
+				end
+			elseif part:IsA("Decal") then
+				part.Transparency = state and 1 or 0
+			end
+		end
+	end
+end
+
+invisBtn.MouseButton1Click:Connect(function()
+	invisible = not invisible
+	setInvisible(invisible)
+	if invisible then
+		invisBtn.Text = "✨ Visible Again"
+		showNotify("🔮 You are now Invisible")
+	else
+		invisBtn.Text = "🔮 Go Invisible"
+		showNotify("👁 You are now Visible")
+	end
+end)
 
 -- 🔒 HIDE NAME BUTTON
 local hideBtn = Instance.new("TextButton")
-hideBtn.Size = UDim2.new(1, -6, 0, 20)
-hideBtn.Position = UDim2.new(0,3,1,-50) -- above Leave button
+hideBtn.Size = UDim2.new(1, -8, 0, 26)
+hideBtn.Position = UDim2.new(0,4,1,-60)
 hideBtn.Text = "🙈 Hide Name"
 hideBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
 hideBtn.TextColor3 = Color3.fromRGB(255,215,0)
 hideBtn.Font = Enum.Font.GothamSemibold
-hideBtn.TextSize = 11
+hideBtn.TextSize = 13
 hideBtn.Parent = frame
-Instance.new("UICorner", hideBtn).CornerRadius = UDim.new(0,8)
+Instance.new("UICorner", hideBtn).CornerRadius = UDim.new(0,10)
 
 local hideStroke = Instance.new("UIStroke")
 hideStroke.Color = Color3.fromRGB(255,215,0)
@@ -102,14 +147,15 @@ hideStroke.Parent = hideBtn
 
 local hidden = false
 
+-- ✅ FIXED FUNCTION TOGGLE NAME
 local function toggleName(hide)
 	if LocalPlayer.Character then
-		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			if hide then
-				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-			else
-				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
+		local head = LocalPlayer.Character:FindFirstChild("Head")
+		if head then
+			for _, v in pairs(head:GetChildren()) do
+				if v:IsA("BillboardGui") then
+					v.Enabled = not hide
+				end
 			end
 		end
 	end
@@ -127,25 +173,17 @@ hideBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- AUTO REAPPLY HIDE ON RESPAWN
-LocalPlayer.CharacterAdded:Connect(function(char)
-	char:WaitForChild("Humanoid")
-	if hidden then
-		toggleName(true)
-	end
-end)
-
 -- 🚪 AUTO LEAVE BUTTON (1 second)
 local leaveBtn = Instance.new("TextButton")
-leaveBtn.Size = UDim2.new(1, -6, 0, 20)
-leaveBtn.Position = UDim2.new(0,3,1,-25)
+leaveBtn.Size = UDim2.new(1, -8, 0, 26)
+leaveBtn.Position = UDim2.new(0,4,1,-30)
 leaveBtn.Text = "🚪 Leave (1s)"
 leaveBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
 leaveBtn.TextColor3 = Color3.fromRGB(255,215,0)
 leaveBtn.Font = Enum.Font.GothamSemibold
-leaveBtn.TextSize = 11
+leaveBtn.TextSize = 13
 leaveBtn.Parent = frame
-Instance.new("UICorner", leaveBtn).CornerRadius = UDim.new(0,8)
+Instance.new("UICorner", leaveBtn).CornerRadius = UDim.new(0,10)
 
 local leaveStroke = Instance.new("UIStroke")
 leaveStroke.Color = Color3.fromRGB(255,215,0)
@@ -160,6 +198,13 @@ leaveBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
+-- Auto reapply kapag respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+	char:WaitForChild("HumanoidRootPart")
+	if invisible then task.wait(0.5) setInvisible(true) end
+	if hidden then toggleName(true) end
+end)
+
 -- 🔄 Refresh Player Buttons
 local function refreshPlayers()
 	scrollingFrame:ClearAllChildren()
@@ -167,15 +212,15 @@ local function refreshPlayers()
 	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer then
 			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(1, -2, 0, 18)
+			btn.Size = UDim2.new(1, -2, 0, 24)
 			btn.Position = UDim2.new(0,0,0,y)
 			btn.Text = "🚀 " .. player.Name
 			btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 			btn.TextColor3 = Color3.fromRGB(255,215,0)
 			btn.Font = Enum.Font.GothamBold
-			btn.TextSize = 10
+			btn.TextSize = 12
 			btn.Parent = scrollingFrame
-			Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+			Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
 
 			btn.MouseButton1Click:Connect(function()
 				if LocalPlayer.Character and player.Character then
@@ -190,7 +235,7 @@ local function refreshPlayers()
 				end
 			end)
 
-			y = y + 20
+			y = y + 28
 		end
 	end
 	scrollingFrame.CanvasSize = UDim2.new(0,0,0,y)
