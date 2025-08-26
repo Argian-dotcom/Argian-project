@@ -11,7 +11,7 @@ local CoreGui = game:GetService("CoreGui")
 -- ========= UI ROOT =========
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "EZPETS_GUI"
-screenGui.ResetOnSpawn = false
+screenGui.ResetOnSpawn = CoreGui
 screenGui.Parent = CoreGui
 
 -- ========= MAIN PANEL =========
