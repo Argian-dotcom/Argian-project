@@ -1,203 +1,286 @@
--- 🤑 EZ PETS 🤑 TELEPORT HUB (WITH GLOW TITLE + FIXED HIDE NAME + SUPER CLOSE TELEPORT + AUTO LEAVE 1s)
--- LocalScript (Executor / StarterPlayerScripts / StarterGui)
+-- 🤑 EZ PETS 🤑 TELEPORT HUB
+-- (PERMA HIDE OWN NAME • PANTAY TELEPORT • LEAVE W/ HIDDEN JUMPSCARE • MINIMIZE TO DRAGGABLE TITLE)
+-- Run as LocalScript (executor / StarterPlayerScripts / StarterGui)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
--- ==== UI SETUP ====
+-- ========= UI ROOT =========
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "EZPETS_TeleportHub"
+screenGui.Name = "EZPETS_GUI"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = game.CoreGui
+screenGui.Parent = CoreGui
 
+-- ========= MAIN PANEL =========
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 250, 0, 300)
-mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Size = UDim2.new(0, 260, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -170)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+mainFrame.BackgroundTransparency = 0.2
 mainFrame.BorderSizePixel = 0
-mainFrame.BackgroundTransparency = 0.1
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0,12)
 
--- ==== Title with Glow ====
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundTransparency = 1
-title.Text = "🤑EZ PETS🤑"
-title.TextColor3 = Color3.fromRGB(0, 255, 0) -- neon green
-title.Font = Enum.Font.GothamBold
-title.TextSize = 22
-title.Parent = mainFrame
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 34)
+titleBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0,12)
 
--- Glow Stroke
-local glow = Instance.new("UIStroke")
-glow.Parent = title
-glow.Color = Color3.fromRGB(0, 255, 0)
-glow.Thickness = 2
-glow.Transparency = 0.3
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -40, 1, 0)
+titleLabel.Position = UDim2.new(0, 8, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Text = "🤑 EZ PETS 🤑"
+titleLabel.TextColor3 = Color3.fromRGB(0,255,0)
+titleLabel.TextSize = 18
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
 
--- Extra duplicate glow (layered effect)
-local glowClone = title:Clone()
-glowClone.Parent = mainFrame
-glowClone.TextColor3 = Color3.fromRGB(0, 200, 0)
-glowClone.Position = UDim2.new(0,2,0,2) -- slight offset
-glowClone.ZIndex = 0
-glowClone.TextTransparency = 0.6
+-- X button (upper-right)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 1, 0)
+closeBtn.Position = UDim2.new(1, -34, 0, 0)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.TextColor3 = Color3.fromRGB(255,60,60)
+closeBtn.Parent = titleBar
 
--- Animate glow (pulsing effect)
-task.spawn(function()
-	while task.wait(1) do
-		TweenService:Create(glow, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-			Thickness = 3
-		}):Play()
-	end
-end)
+-- Content area (scroll)
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -10, 1, -44)
+scroll.Position = UDim2.new(0, 5, 0, 39)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 4
+scroll.Parent = mainFrame
 
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 5)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Padding = UDim.new(0,6)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Parent = mainFrame
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Parent = scroll
 
--- ==== Notification ====
-local function showNotify(msg)
-	local note = Instance.new("TextLabel")
-	note.Size = UDim2.new(1, 0, 0, 30)
-	note.BackgroundTransparency = 0.3
-	note.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	note.Text = msg
-	note.TextColor3 = Color3.fromRGB(255, 255, 255)
-	note.Font = Enum.Font.GothamBold
-	note.TextSize = 14
-	note.Parent = mainFrame
+local function autosize()
+	scroll.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 10)
+end
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(autosize)
 
-	TweenService:Create(note, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
-	task.delay(2, function()
-		TweenService:Create(note, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-		task.wait(0.5)
-		note:Destroy()
+-- ========= MINIMIZED DRAGGABLE TITLE =========
+local miniFrame = Instance.new("Frame")
+miniFrame.Size = UDim2.new(0, 160, 0, 34)
+miniFrame.Position = UDim2.new(0.5, -80, 0, 6) -- default top-center
+miniFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+miniFrame.BorderSizePixel = 0
+miniFrame.Visible = false
+miniFrame.Active = true
+miniFrame.Parent = screenGui
+Instance.new("UICorner", miniFrame).CornerRadius = UDim.new(0,12)
+
+local miniBtn = Instance.new("TextButton")
+miniBtn.Size = UDim2.new(1, 0, 1, 0)
+miniBtn.BackgroundTransparency = 1
+miniBtn.Text = "🤑 EZ PETS 🤑"
+miniBtn.Font = Enum.Font.GothamBold
+miniBtn.TextSize = 16
+miniBtn.TextColor3 = Color3.fromRGB(0,255,0)
+miniBtn.Parent = miniFrame
+
+-- simple drag (manual) for miniFrame
+do
+	local dragging, dragStart, startPos
+	miniFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = miniFrame.Position
+		end
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			miniFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+	UIS.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
 	end)
 end
 
--- ==== Auto Leave (1s only) ====
-local function autoLeave(seconds)
-	showNotify("⚠️ Leaving in "..seconds.."s")
-	task.delay(seconds, function()
-		LocalPlayer:Kick("🚪 EZ PETS Auto Leave")
-	end)
-end
-
--- ==== HIDE NAME FIX ====
-local nameHidden = false
-
-local function toggleName(hide)
-	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head") then
-		local head = LocalPlayer.Character.Head
-		for _, v in pairs(head:GetChildren()) do
-			if v:IsA("BillboardGui") then
-				if hide then
-					v:Destroy() -- tanggalin totally
-				end
-			end
-		end
-		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			if hide then
-				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-			else
-				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
-			end
-		end
-	end
-end
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-	char:WaitForChild("Humanoid")
-	char:WaitForChild("Head")
-	task.wait(0.5)
-	if nameHidden then
-		toggleName(true)
-	end
+-- Toggle behavior
+closeBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = false
+	miniFrame.Visible = true
+end)
+miniBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = true
+	miniFrame.Visible = false
 end)
 
--- ==== Button Creator ====
+-- ========= HELPERS =========
 local function createBtn(text, callback)
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0.9, 0, 0, 35)
-	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Size = UDim2.new(1, -10, 0, 36)
+	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 14
 	btn.Text = text
 	btn.AutoButtonColor = true
-	btn.Parent = mainFrame
+	btn.Parent = scroll
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
-	btn.MouseButton1Click:Connect(function() callback(btn) end)
+	btn.MouseButton1Click:Connect(function() pcall(callback, btn) end)
 	return btn
 end
 
--- Hide Name Button
-local hideNameBtn = createBtn("🙈 Hide Name", function(self)
-	nameHidden = not nameHidden
-	toggleName(nameHidden)
-	if nameHidden then
-		self.Text = "👁 Show Name"
-		showNotify("🙈 Name Hidden")
-	else
-		self.Text = "🙈 Hide Name"
-		showNotify("👁 Name Visible")
+local function notify(msg)
+	pcall(function()
+		game.StarterGui:SetCore("SendNotification", {
+			Title = "🤑 EZ PETS 🤑",
+			Text = msg,
+			Duration = 2
+		})
+	end)
+end
+
+-- ========= PERMANENT HIDE OWN NAME (LOCAL ONLY) =========
+local function hideOwnName(char)
+	task.wait(0.2)
+	if not char then return end
+	local head = char:FindFirstChild("Head")
+	if head then
+		for _, v in ipairs(head:GetChildren()) do
+			if v:IsA("BillboardGui") then
+				v.Enabled = false
+				v:Destroy()
+			end
+		end
 	end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		hum.NameDisplayDistance = 0
+		hum.HealthDisplayDistance = 0
+	end
+end
+
+-- apply now + on respawn + keep cleaning if some script recreates it
+if LocalPlayer.Character then hideOwnName(LocalPlayer.Character) end
+LocalPlayer.CharacterAdded:Connect(function(char)
+	char:WaitForChild("Humanoid", 5)
+	char:WaitForChild("Head", 5)
+	hideOwnName(char)
+	-- anti-recreate loop (light)
+	task.spawn(function()
+		for i=1,60 do -- ~60 ticks (~30s) gentle cleanup
+			if char and char.Parent and char:FindFirstChild("Head") then
+				for _, v in ipairs(char.Head:GetChildren()) do
+					if v:IsA("BillboardGui") then v:Destroy() end
+				end
+			end
+			task.wait(0.5)
+		end
+	end)
 end)
 
--- Auto Leave (only 1s)
-createBtn("🚪 Auto Leave (1s)", function()
-	autoLeave(1)
+-- ========= LEAVE (HIDDEN JUMPSCARE) =========
+local function leaveWithScreen()
+	local overlay = Instance.new("ScreenGui")
+	overlay.IgnoreGuiInset = true
+	overlay.Parent = CoreGui
+
+	local bg = Instance.new("Frame")
+	bg.Size = UDim2.new(1,0,1,0)
+	bg.BackgroundColor3 = Color3.new(0,0,0)
+	bg.BackgroundTransparency = 1
+	bg.Parent = overlay
+
+	local txt = Instance.new("TextLabel")
+	txt.Size = UDim2.new(1,0,1,0)
+	txt.BackgroundTransparency = 1
+	txt.Text = "I LOVE YOU"
+	txt.TextColor3 = Color3.fromRGB(255,0,0)
+	txt.Font = Enum.Font.GothamBlack
+	txt.TextScaled = true
+	txt.TextTransparency = 1
+	txt.Parent = overlay
+
+	TweenService:Create(bg, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+	TweenService:Create(txt, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+
+	local sound = Instance.new("Sound")
+	sound.SoundId = "rbxassetid://4590662766"
+	sound.Volume = 3
+	sound.Parent = overlay
+	sound:Play()
+
+	task.wait(1.6)
+	LocalPlayer:Kick("👋")
+end
+
+-- ========= BUTTONS =========
+createBtn("🚪 Leave Game", function()
+	leaveWithScreen()
 end)
 
--- ==== Player List Teleport ====
-local playerFrame = Instance.new("ScrollingFrame")
-playerFrame.Size = UDim2.new(0.9, 0, 0, 120)
-playerFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-playerFrame.ScrollBarThickness = 4
-playerFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-playerFrame.CanvasSize = UDim2.new()
-playerFrame.Parent = mainFrame
-Instance.new("UICorner", playerFrame).CornerRadius = UDim.new(0,10)
+-- Players label
+local playersLabel = Instance.new("TextLabel")
+playersLabel.Size = UDim2.new(1, -10, 0, 22)
+playersLabel.BackgroundTransparency = 1
+playersLabel.Text = "Players:"
+playersLabel.Font = Enum.Font.GothamBold
+playersLabel.TextColor3 = Color3.fromRGB(200,200,200)
+playersLabel.TextSize = 14
+playersLabel.TextXAlignment = Enum.TextXAlignment.Left
+playersLabel.Parent = scroll
 
-local plLayout = Instance.new("UIListLayout")
-plLayout.Padding = UDim.new(0, 4)
-plLayout.Parent = playerFrame
-
-local function refreshPlayerList()
-	for _, c in pairs(playerFrame:GetChildren()) do
-		if c:IsA("TextButton") then c:Destroy() end
+-- Teleport list (pantay pos + facing)
+local function buildPlayerButtons()
+	-- clear old player buttons
+	for _, c in ipairs(scroll:GetChildren()) do
+		if c:IsA("TextButton") and c ~= nil and (c.Text:find("Teleport to ") or c.Name == "PlayerBtn") then
+			c:Destroy()
+		end
 	end
-	for _, p in pairs(Players:GetPlayers()) do
+	for _, p in ipairs(Players:GetPlayers()) do
 		if p ~= LocalPlayer then
 			local pBtn = Instance.new("TextButton")
-			pBtn.Size = UDim2.new(1, -4, 0, 28)
-			pBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-			pBtn.Font = Enum.Font.GothamBold
+			pBtn.Name = "PlayerBtn"
+			pBtn.Size = UDim2.new(1, -10, 0, 32)
+			pBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+			pBtn.TextColor3 = Color3.fromRGB(255,255,255)
+			pBtn.Font = Enum.Font.Gotham
 			pBtn.TextSize = 13
-			pBtn.Text = p.DisplayName .. " (@"..p.Name..")"
-			pBtn.Parent = playerFrame
+			pBtn.Text = "Teleport to "..p.DisplayName.." (@"..p.Name..")"
+			pBtn.Parent = scroll
 			Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0,8)
 
 			pBtn.MouseButton1Click:Connect(function()
-				if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-					LocalPlayer.Character:MoveTo(p.Character.HumanoidRootPart.Position)
-					showNotify("🌀 Teleported to "..p.DisplayName)
+				local myChar = LocalPlayer.Character
+				local targetChar = p.Character
+				if myChar and targetChar and myChar:FindFirstChild("HumanoidRootPart") and targetChar:FindFirstChild("HumanoidRootPart") then
+					myChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame
+					notify("🌀 Teleported to "..p.DisplayName)
 				else
-					showNotify("❌ "..p.Name.." not available")
+					notify("❌ "..p.Name.." not available")
 				end
 			end)
 		end
 	end
+	autosize()
 end
 
-refreshPlayerList()
-Players.PlayerAdded:Connect(refreshPlayerList)
-Players.PlayerRemoving:Connect(refreshPlayerList)
+buildPlayerButtons()
+Players.PlayerAdded:Connect(buildPlayerButtons)
+Players.PlayerRemoving:Connect(buildPlayerButtons)
