@@ -1,7 +1,3 @@
--- 🤑 EZ PETS 🤑 TELEPORT HUB
--- (PERMA HIDE OWN NAME • PANTAY TELEPORT • LEAVE W/ HIDDEN JUMPSCARE • MINIMIZE TO DRAGGABLE TITLE)
--- Run as LocalScript (executor / StarterPlayerScripts / StarterGui)
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
@@ -11,8 +7,89 @@ local CoreGui = game:GetService("CoreGui")
 -- ========= UI ROOT =========
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "EZPETS_GUI"
-screenGui.ResetOnSpawn = CoreGui
+screenGui.ResetOnSpawn = false
 screenGui.Parent = CoreGui
+screenGui.Enabled = false -- default: naka-hide hanggang may key
+
+-- ========= KEY SYSTEM =========
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "KeySystem"
+keyGui.Parent = CoreGui
+
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(0, 260, 0, 170)
+keyFrame.Position = UDim2.new(0.5, -130, 0.5, -85)
+keyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+keyFrame.BorderSizePixel = 0
+keyFrame.Active = true
+keyFrame.Draggable = true
+keyFrame.Parent = keyGui
+Instance.new("UICorner", keyFrame).CornerRadius = UDim.new(0,12)
+
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Size = UDim2.new(1, 0, 0, 34)
+keyTitle.BackgroundTransparency = 1
+keyTitle.Font = Enum.Font.GothamBold
+keyTitle.Text = "🔑 Enter Access Key"
+keyTitle.TextColor3 = Color3.fromRGB(0,255,0)
+keyTitle.TextSize = 16
+keyTitle.Parent = keyFrame
+
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(1, -20, 0, 36)
+keyBox.Position = UDim2.new(0,10,0,50)
+keyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+keyBox.TextColor3 = Color3.fromRGB(255,255,255)
+keyBox.PlaceholderText = "Enter key here..."
+keyBox.Font = Enum.Font.Gotham
+keyBox.TextSize = 14
+keyBox.ClearTextOnFocus = false
+keyBox.Parent = keyFrame
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0,10)
+
+local submitBtn = Instance.new("TextButton")
+submitBtn.Size = UDim2.new(1, -20, 0, 34)
+submitBtn.Position = UDim2.new(0,10,0,95)
+submitBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
+submitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+submitBtn.Font = Enum.Font.GothamBold
+submitBtn.Text = "UNLOCK"
+submitBtn.TextSize = 14
+submitBtn.Parent = keyFrame
+Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0,10)
+
+-- 🔗 Discord clickable link
+local discordBtn = Instance.new("TextButton")
+discordBtn.Size = UDim2.new(1, -20, 0, 20)
+discordBtn.Position = UDim2.new(0,10,0,135)
+discordBtn.BackgroundTransparency = 1
+discordBtn.Font = Enum.Font.Gotham
+discordBtn.Text = "Get the key in our Discord: discord.gg/rDP6q2W8XA"
+discordBtn.TextColor3 = Color3.fromRGB(120,180,255)
+discordBtn.TextSize = 12
+discordBtn.TextWrapped = true
+discordBtn.TextXAlignment = Enum.TextXAlignment.Center
+discordBtn.Parent = keyFrame
+
+discordBtn.MouseButton1Click:Connect(function()
+	setclipboard("https://discord.gg/rDP6q2W8XA")
+	discordBtn.Text = "✅ Link copied to clipboard!"
+	task.wait(1.5)
+	discordBtn.Text = "Get the key in our Discord: discord.gg/rDP6q2W8XA"
+end)
+
+-- secret key
+local SECRET_KEY = "ARGIANONTOP"
+
+submitBtn.MouseButton1Click:Connect(function()
+	if keyBox.Text == SECRET_KEY then
+		screenGui.Enabled = true   -- enable yung tunay na GUI
+		keyGui:Destroy()           -- tanggalin na yung key system
+	else
+		keyBox.Text = ""
+		keyBox.PlaceholderText = "❌ Wrong key!"
+	end
+end)
 
 -- ========= MAIN PANEL =========
 local mainFrame = Instance.new("Frame")
@@ -78,7 +155,7 @@ layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(autosize)
 -- ========= MINIMIZED DRAGGABLE TITLE =========
 local miniFrame = Instance.new("Frame")
 miniFrame.Size = UDim2.new(0, 160, 0, 34)
-miniFrame.Position = UDim2.new(0.5, -80, 0, 6) -- default top-center
+miniFrame.Position = UDim2.new(0.5, -80, 0, 6)
 miniFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 miniFrame.BorderSizePixel = 0
 miniFrame.Visible = false
@@ -154,7 +231,7 @@ local function notify(msg)
 	end)
 end
 
--- ========= PERMANENT HIDE OWN NAME (LOCAL ONLY) =========
+-- ========= PERMANENT HIDE OWN NAME =========
 local function hideOwnName(char)
 	task.wait(0.2)
 	if not char then return end
@@ -162,7 +239,6 @@ local function hideOwnName(char)
 	if head then
 		for _, v in ipairs(head:GetChildren()) do
 			if v:IsA("BillboardGui") then
-				v.Enabled = false
 				v:Destroy()
 			end
 		end
@@ -175,15 +251,13 @@ local function hideOwnName(char)
 	end
 end
 
--- apply now + on respawn + keep cleaning if some script recreates it
 if LocalPlayer.Character then hideOwnName(LocalPlayer.Character) end
 LocalPlayer.CharacterAdded:Connect(function(char)
 	char:WaitForChild("Humanoid", 5)
 	char:WaitForChild("Head", 5)
 	hideOwnName(char)
-	-- anti-recreate loop (light)
 	task.spawn(function()
-		for i=1,60 do -- ~60 ticks (~30s) gentle cleanup
+		for i=1,60 do
 			if char and char.Parent and char:FindFirstChild("Head") then
 				for _, v in ipairs(char.Head:GetChildren()) do
 					if v:IsA("BillboardGui") then v:Destroy() end
@@ -245,16 +319,17 @@ playersLabel.TextSize = 14
 playersLabel.TextXAlignment = Enum.TextXAlignment.Left
 playersLabel.Parent = scroll
 
--- Teleport list (pantay pos + facing)
+-- Teleport list
 local function buildPlayerButtons()
-	-- clear old player buttons
 	for _, c in ipairs(scroll:GetChildren()) do
-		if c:IsA("TextButton") and c ~= nil and (c.Text:find("Teleport to ") or c.Name == "PlayerBtn") then
+		if c:IsA("TextButton") and (c.Text:find("Teleport to ") or c.Name == "PlayerBtn") then
 			c:Destroy()
 		end
 	end
+	local others = 0
 	for _, p in ipairs(Players:GetPlayers()) do
 		if p ~= LocalPlayer then
+			others += 1
 			local pBtn = Instance.new("TextButton")
 			pBtn.Name = "PlayerBtn"
 			pBtn.Size = UDim2.new(1, -10, 0, 32)
@@ -277,6 +352,16 @@ local function buildPlayerButtons()
 				end
 			end)
 		end
+	end
+	if others == 0 then
+		local emptyMsg = Instance.new("TextLabel")
+		emptyMsg.Size = UDim2.new(1, -10, 0, 30)
+		emptyMsg.BackgroundTransparency = 1
+		emptyMsg.Text = "No players available"
+		emptyMsg.Font = Enum.Font.Gotham
+		emptyMsg.TextColor3 = Color3.fromRGB(150,150,150)
+		emptyMsg.TextSize = 14
+		emptyMsg.Parent = scroll
 	end
 	autosize()
 end
