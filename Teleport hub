@@ -133,8 +133,10 @@ local function refreshPlayerList()
 			tpBtn.TextSize = 16
 			tpBtn.Parent = playerList
 			tpBtn.MouseButton1Click:Connect(function()
-				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-					LocalPlayer.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(2,0,0)
+				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") 
+				and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+					-- dikit na dikit (no offset)
+					LocalPlayer.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame
 				end
 			end)
 			local corner = Instance.new("UICorner", tpBtn)
@@ -147,18 +149,16 @@ Players.PlayerAdded:Connect(refreshPlayerList)
 Players.PlayerRemoving:Connect(refreshPlayerList)
 refreshPlayerList()
 
+-- Auto refresh player list bawat 5 seconds
+task.spawn(function()
+	while task.wait(5) do
+		refreshPlayerList()
+	end
+end)
+
 -- Leave Game (no jumpscare)
 createBtn("🚪 Leave Game", function()
 	LocalPlayer:Kick("👋")
-end)
-
--- Copy Discord Link
-createBtn("📋 Copy Discord", function(btn)
-	setclipboard("https://discord.gg/argiandev")
-	btn.Text = "✅ Copied!"
-	task.delay(2, function()
-		btn.Text = "📋 Copy Discord"
-	end)
 end)
 
 -- ========= KEY SYSTEM =========
@@ -167,8 +167,8 @@ keyGui.Name = "KeySystem"
 keyGui.Parent = CoreGui
 
 local keyFrame = Instance.new("Frame")
-keyFrame.Size = UDim2.new(0, 300, 0, 150)
-keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+keyFrame.Size = UDim2.new(0, 300, 0, 200)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
 keyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 keyFrame.Active = true
 keyFrame.Draggable = true
@@ -211,6 +211,27 @@ submitBtn.Parent = keyFrame
 
 local UICornerSubmit = Instance.new("UICorner", submitBtn)
 UICornerSubmit.CornerRadius = UDim.new(0, 8)
+
+-- Discord Copy Button sa Key GUI
+local discordBtn = Instance.new("TextButton")
+discordBtn.Size = UDim2.new(0.5, -15, 0, 40)
+discordBtn.Position = UDim2.new(0.5, 5, 0, 100)
+discordBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+discordBtn.Text = "📋 Copy Discord"
+discordBtn.TextColor3 = Color3.new(1, 1, 1)
+discordBtn.Font = Enum.Font.SourceSansBold
+discordBtn.TextSize = 18
+discordBtn.Parent = keyFrame
+local UICornerDiscord = Instance.new("UICorner", discordBtn)
+UICornerDiscord.CornerRadius = UDim.new(0, 8)
+
+discordBtn.MouseButton1Click:Connect(function(btn)
+	setclipboard("https://discord.gg/argiandev")
+	btn.Text = "✅ Copied!"
+	task.delay(2, function()
+		btn.Text = "📋 Copy Discord"
+	end)
+end)
 
 -- secret key
 local SECRET_KEY = "ARGIAN"
