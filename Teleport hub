@@ -1,3 +1,6 @@
+-- 🤑 EZ PETS 🤑 TELEPORT HUB
+-- (KEY SYSTEM • MAIN GUI • TELEPORT • NO HIDE NAME • NO JUMPSCARE)
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
@@ -9,7 +12,154 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "EZPETS_GUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = CoreGui
-screenGui.Enabled = false -- default: naka-hide hanggang may key
+screenGui.Enabled = false -- default off, wait for key
+
+-- ========= MAIN FRAME =========
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 400, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local UICorner = Instance.new("UICorner", mainFrame)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+local titleBar = Instance.new("TextLabel")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+titleBar.Text = "🤑 EZ PETS 🤑 TELEPORT HUB"
+titleBar.TextColor3 = Color3.new(1, 1, 1)
+titleBar.Font = Enum.Font.SourceSansBold
+titleBar.TextSize = 20
+titleBar.Parent = mainFrame
+
+local UICorner2 = Instance.new("UICorner", titleBar)
+UICorner2.CornerRadius = UDim.new(0, 12)
+
+-- Minimize Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 40, 1, 0)
+closeBtn.Position = UDim2.new(1, -40, 0, 0)
+closeBtn.Text = "—"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 24
+closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+closeBtn.Parent = titleBar
+
+-- Content Frame
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, 0, 1, -40)
+contentFrame.Position = UDim2.new(0, 0, 0, 40)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
+-- Player List
+local playerList = Instance.new("ScrollingFrame")
+playerList.Size = UDim2.new(0.5, -10, 1, -10)
+playerList.Position = UDim2.new(0, 5, 0, 5)
+playerList.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerList.ScrollBarThickness = 6
+playerList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+playerList.BorderSizePixel = 0
+playerList.Parent = contentFrame
+
+local UIListLayout = Instance.new("UIListLayout", playerList)
+UIListLayout.Padding = UDim.new(0, 5)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Buttons Frame
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Size = UDim2.new(0.5, -10, 1, -10)
+buttonFrame.Position = UDim2.new(0.5, 5, 0, 5)
+buttonFrame.BackgroundTransparency = 1
+buttonFrame.Parent = contentFrame
+
+-- Mini Button
+local miniBtn = Instance.new("TextButton")
+miniBtn.Size = UDim2.new(0, 100, 0, 40)
+miniBtn.Position = UDim2.new(0, 10, 0, 10)
+miniBtn.Text = "📂 Open"
+miniBtn.TextColor3 = Color3.new(1, 1, 1)
+miniBtn.Font = Enum.Font.SourceSansBold
+miniBtn.TextSize = 18
+miniBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+miniBtn.Visible = false
+miniBtn.Parent = screenGui
+
+closeBtn.MouseButton1Click:Connect(function()
+	screenGui.Enabled = false
+	miniBtn.Visible = true
+end)
+
+miniBtn.MouseButton1Click:Connect(function()
+	screenGui.Enabled = true
+	miniBtn.Visible = false
+end)
+
+-- ========= FUNCTIONS =========
+local function createBtn(txt, callback)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -20, 0, 40)
+	btn.Position = UDim2.new(0, 10, 0, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	btn.Text = txt
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.SourceSansBold
+	btn.TextSize = 18
+	btn.Parent = buttonFrame
+	btn.MouseButton1Click:Connect(callback)
+	local corner = Instance.new("UICorner", btn)
+	corner.CornerRadius = UDim.new(0, 8)
+	return btn
+end
+
+-- Teleport to Player
+local function refreshPlayerList()
+	playerList:ClearAllChildren()
+	local layout = UIListLayout:Clone()
+	layout.Parent = playerList
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer then
+			local tpBtn = Instance.new("TextButton")
+			tpBtn.Size = UDim2.new(1, -10, 0, 30)
+			tpBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+			tpBtn.Text = "Teleport to " .. plr.Name
+			tpBtn.TextColor3 = Color3.new(1, 1, 1)
+			tpBtn.Font = Enum.Font.SourceSans
+			tpBtn.TextSize = 16
+			tpBtn.Parent = playerList
+			tpBtn.MouseButton1Click:Connect(function()
+				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+					LocalPlayer.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(2,0,0)
+				end
+			end)
+			local corner = Instance.new("UICorner", tpBtn)
+			corner.CornerRadius = UDim.new(0, 6)
+		end
+	end
+end
+
+Players.PlayerAdded:Connect(refreshPlayerList)
+Players.PlayerRemoving:Connect(refreshPlayerList)
+refreshPlayerList()
+
+-- Leave Game (no jumpscare)
+createBtn("🚪 Leave Game", function()
+	LocalPlayer:Kick("👋")
+end)
+
+-- Copy Discord Link
+createBtn("📋 Copy Discord", function(btn)
+	setclipboard("https://discord.gg/argiandev")
+	btn.Text = "✅ Copied!"
+	task.delay(2, function()
+		btn.Text = "📋 Copy Discord"
+	end)
+end)
 
 -- ========= KEY SYSTEM =========
 local keyGui = Instance.new("ScreenGui")
@@ -17,355 +167,60 @@ keyGui.Name = "KeySystem"
 keyGui.Parent = CoreGui
 
 local keyFrame = Instance.new("Frame")
-keyFrame.Size = UDim2.new(0, 260, 0, 170)
-keyFrame.Position = UDim2.new(0.5, -130, 0.5, -85)
-keyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-keyFrame.BorderSizePixel = 0
+keyFrame.Size = UDim2.new(0, 300, 0, 150)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 keyFrame.Active = true
 keyFrame.Draggable = true
 keyFrame.Parent = keyGui
-Instance.new("UICorner", keyFrame).CornerRadius = UDim.new(0,12)
 
-local keyTitle = Instance.new("TextLabel")
-keyTitle.Size = UDim2.new(1, 0, 0, 34)
-keyTitle.BackgroundTransparency = 1
-keyTitle.Font = Enum.Font.GothamBold
-keyTitle.Text = "🔑 Enter Access Key"
-keyTitle.TextColor3 = Color3.fromRGB(0,255,0)
-keyTitle.TextSize = 16
-keyTitle.Parent = keyFrame
+local UICornerKey = Instance.new("UICorner", keyFrame)
+UICornerKey.CornerRadius = UDim.new(0, 10)
+
+local keyLabel = Instance.new("TextLabel")
+keyLabel.Size = UDim2.new(1, 0, 0, 40)
+keyLabel.BackgroundTransparency = 1
+keyLabel.Text = "Enter Secret Key"
+keyLabel.TextColor3 = Color3.new(1, 1, 1)
+keyLabel.Font = Enum.Font.SourceSansBold
+keyLabel.TextSize = 20
+keyLabel.Parent = keyFrame
 
 local keyBox = Instance.new("TextBox")
-keyBox.Size = UDim2.new(1, -20, 0, 36)
-keyBox.Position = UDim2.new(0,10,0,50)
-keyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-keyBox.TextColor3 = Color3.fromRGB(255,255,255)
-keyBox.PlaceholderText = "Enter key here..."
-keyBox.Font = Enum.Font.Gotham
-keyBox.TextSize = 14
-keyBox.ClearTextOnFocus = false
+keyBox.Size = UDim2.new(1, -20, 0, 40)
+keyBox.Position = UDim2.new(0, 10, 0, 50)
+keyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+keyBox.TextColor3 = Color3.new(1, 1, 1)
+keyBox.PlaceholderText = "Type your key..."
+keyBox.Font = Enum.Font.SourceSans
+keyBox.TextSize = 18
 keyBox.Parent = keyFrame
-Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0,10)
+
+local UICornerBox = Instance.new("UICorner", keyBox)
+UICornerBox.CornerRadius = UDim.new(0, 8)
 
 local submitBtn = Instance.new("TextButton")
-submitBtn.Size = UDim2.new(1, -20, 0, 34)
-submitBtn.Position = UDim2.new(0,10,0,95)
-submitBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
-submitBtn.TextColor3 = Color3.fromRGB(255,255,255)
-submitBtn.Font = Enum.Font.GothamBold
-submitBtn.Text = "UNLOCK"
-submitBtn.TextSize = 14
+submitBtn.Size = UDim2.new(0.5, -15, 0, 40)
+submitBtn.Position = UDim2.new(0, 10, 0, 100)
+submitBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+submitBtn.Text = "Submit"
+submitBtn.TextColor3 = Color3.new(1, 1, 1)
+submitBtn.Font = Enum.Font.SourceSansBold
+submitBtn.TextSize = 18
 submitBtn.Parent = keyFrame
-Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0,10)
 
--- 🔗 Discord clickable link
-local discordBtn = Instance.new("TextButton")
-discordBtn.Size = UDim2.new(1, -20, 0, 20)
-discordBtn.Position = UDim2.new(0,10,0,135)
-discordBtn.BackgroundTransparency = 1
-discordBtn.Font = Enum.Font.Gotham
-discordBtn.Text = "Get the key in our Discord: discord.gg/rDP6q2W8XA"
-discordBtn.TextColor3 = Color3.fromRGB(120,180,255)
-discordBtn.TextSize = 12
-discordBtn.TextWrapped = true
-discordBtn.TextXAlignment = Enum.TextXAlignment.Center
-discordBtn.Parent = keyFrame
-
-discordBtn.MouseButton1Click:Connect(function()
-	setclipboard("https://discord.gg/rDP6q2W8XA")
-	discordBtn.Text = "✅ Link copied to clipboard!"
-	task.wait(1.5)
-	discordBtn.Text = "Get the key in our Discord: discord.gg/rDP6q2W8XA"
-end)
+local UICornerSubmit = Instance.new("UICorner", submitBtn)
+UICornerSubmit.CornerRadius = UDim.new(0, 8)
 
 -- secret key
-local SECRET_KEY = "ARGIANONTOP"
+local SECRET_KEY = "ARGIAN"
 
 submitBtn.MouseButton1Click:Connect(function()
 	if keyBox.Text == SECRET_KEY then
 		screenGui.Enabled = true   -- enable yung tunay na GUI
-		keyGui:Destroy()           -- tanggalin na yung key system
+		keyGui.Enabled = false     -- i-hide lang, wag i-destroy
 	else
 		keyBox.Text = ""
 		keyBox.PlaceholderText = "❌ Wrong key!"
 	end
 end)
-
--- ========= MAIN PANEL =========
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 260, 0, 340)
-mainFrame.Position = UDim2.new(0.5, -130, 0.5, -170)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-mainFrame.BackgroundTransparency = 0.2
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0,12)
-
--- Title bar
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 34)
-titleBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
-titleBar.BorderSizePixel = 0
-titleBar.Parent = mainFrame
-Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0,12)
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -40, 1, 0)
-titleLabel.Position = UDim2.new(0, 8, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Text = "🤑 EZ PETS 🤑"
-titleLabel.TextColor3 = Color3.fromRGB(0,255,0)
-titleLabel.TextSize = 18
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = titleBar
-
--- X button (upper-right)
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 1, 0)
-closeBtn.Position = UDim2.new(1, -34, 0, 0)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 18
-closeBtn.TextColor3 = Color3.fromRGB(255,60,60)
-closeBtn.Parent = titleBar
-
--- Content area (scroll)
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -10, 1, -44)
-scroll.Position = UDim2.new(0, 5, 0, 39)
-scroll.BackgroundTransparency = 1
-scroll.ScrollBarThickness = 4
-scroll.Parent = mainFrame
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,6)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.Parent = scroll
-
-local function autosize()
-	scroll.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 10)
-end
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(autosize)
-
--- ========= MINIMIZED DRAGGABLE TITLE =========
-local miniFrame = Instance.new("Frame")
-miniFrame.Size = UDim2.new(0, 160, 0, 34)
-miniFrame.Position = UDim2.new(0.5, -80, 0, 6)
-miniFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-miniFrame.BorderSizePixel = 0
-miniFrame.Visible = false
-miniFrame.Active = true
-miniFrame.Parent = screenGui
-Instance.new("UICorner", miniFrame).CornerRadius = UDim.new(0,12)
-
-local miniBtn = Instance.new("TextButton")
-miniBtn.Size = UDim2.new(1, 0, 1, 0)
-miniBtn.BackgroundTransparency = 1
-miniBtn.Text = "🤑 EZ PETS 🤑"
-miniBtn.Font = Enum.Font.GothamBold
-miniBtn.TextSize = 16
-miniBtn.TextColor3 = Color3.fromRGB(0,255,0)
-miniBtn.Parent = miniFrame
-
--- simple drag (manual) for miniFrame
-do
-	local dragging, dragStart, startPos
-	miniFrame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = miniFrame.Position
-		end
-	end)
-	UIS.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - dragStart
-			miniFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
-	UIS.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-end
-
--- Toggle behavior
-closeBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = false
-	miniFrame.Visible = true
-end)
-miniBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = true
-	miniFrame.Visible = false
-end)
-
--- ========= HELPERS =========
-local function createBtn(text, callback)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, -10, 0, 36)
-	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.Text = text
-	btn.AutoButtonColor = true
-	btn.Parent = scroll
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
-	btn.MouseButton1Click:Connect(function() pcall(callback, btn) end)
-	return btn
-end
-
-local function notify(msg)
-	pcall(function()
-		game.StarterGui:SetCore("SendNotification", {
-			Title = "🤑 EZ PETS 🤑",
-			Text = msg,
-			Duration = 2
-		})
-	end)
-end
-
--- ========= PERMANENT HIDE OWN NAME =========
-local function hideOwnName(char)
-	task.wait(0.2)
-	if not char then return end
-	local head = char:FindFirstChild("Head")
-	if head then
-		for _, v in ipairs(head:GetChildren()) do
-			if v:IsA("BillboardGui") then
-				v:Destroy()
-			end
-		end
-	end
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if hum then
-		hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-		hum.NameDisplayDistance = 0
-		hum.HealthDisplayDistance = 0
-	end
-end
-
-if LocalPlayer.Character then hideOwnName(LocalPlayer.Character) end
-LocalPlayer.CharacterAdded:Connect(function(char)
-	char:WaitForChild("Humanoid", 5)
-	char:WaitForChild("Head", 5)
-	hideOwnName(char)
-	task.spawn(function()
-		for i=1,60 do
-			if char and char.Parent and char:FindFirstChild("Head") then
-				for _, v in ipairs(char.Head:GetChildren()) do
-					if v:IsA("BillboardGui") then v:Destroy() end
-				end
-			end
-			task.wait(0.5)
-		end
-	end)
-end)
-
--- ========= LEAVE (HIDDEN JUMPSCARE) =========
-local function leaveWithScreen()
-	local overlay = Instance.new("ScreenGui")
-	overlay.IgnoreGuiInset = true
-	overlay.Parent = CoreGui
-
-	local bg = Instance.new("Frame")
-	bg.Size = UDim2.new(1,0,1,0)
-	bg.BackgroundColor3 = Color3.new(0,0,0)
-	bg.BackgroundTransparency = 1
-	bg.Parent = overlay
-
-	local txt = Instance.new("TextLabel")
-	txt.Size = UDim2.new(1,0,1,0)
-	txt.BackgroundTransparency = 1
-	txt.Text = "I LOVE YOU"
-	txt.TextColor3 = Color3.fromRGB(255,0,0)
-	txt.Font = Enum.Font.GothamBlack
-	txt.TextScaled = true
-	txt.TextTransparency = 1
-	txt.Parent = overlay
-
-	TweenService:Create(bg, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
-	TweenService:Create(txt, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
-
-	local sound = Instance.new("Sound")
-	sound.SoundId = "rbxassetid://4590662766"
-	sound.Volume = 3
-	sound.Parent = overlay
-	sound:Play()
-
-	task.wait(1.6)
-	LocalPlayer:Kick("👋")
-end
-
--- ========= BUTTONS =========
-createBtn("🚪 Leave Game", function()
-	leaveWithScreen()
-end)
-
--- Players label
-local playersLabel = Instance.new("TextLabel")
-playersLabel.Size = UDim2.new(1, -10, 0, 22)
-playersLabel.BackgroundTransparency = 1
-playersLabel.Text = "Players:"
-playersLabel.Font = Enum.Font.GothamBold
-playersLabel.TextColor3 = Color3.fromRGB(200,200,200)
-playersLabel.TextSize = 14
-playersLabel.TextXAlignment = Enum.TextXAlignment.Left
-playersLabel.Parent = scroll
-
--- Teleport list
-local function buildPlayerButtons()
-	for _, c in ipairs(scroll:GetChildren()) do
-		if c:IsA("TextButton") and (c.Text:find("Teleport to ") or c.Name == "PlayerBtn") then
-			c:Destroy()
-		end
-	end
-	local others = 0
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p ~= LocalPlayer then
-			others += 1
-			local pBtn = Instance.new("TextButton")
-			pBtn.Name = "PlayerBtn"
-			pBtn.Size = UDim2.new(1, -10, 0, 32)
-			pBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-			pBtn.TextColor3 = Color3.fromRGB(255,255,255)
-			pBtn.Font = Enum.Font.Gotham
-			pBtn.TextSize = 13
-			pBtn.Text = "Teleport to "..p.DisplayName.." (@"..p.Name..")"
-			pBtn.Parent = scroll
-			Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0,8)
-
-			pBtn.MouseButton1Click:Connect(function()
-				local myChar = LocalPlayer.Character
-				local targetChar = p.Character
-				if myChar and targetChar and myChar:FindFirstChild("HumanoidRootPart") and targetChar:FindFirstChild("HumanoidRootPart") then
-					myChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame
-					notify("🌀 Teleported to "..p.DisplayName)
-				else
-					notify("❌ "..p.Name.." not available")
-				end
-			end)
-		end
-	end
-	if others == 0 then
-		local emptyMsg = Instance.new("TextLabel")
-		emptyMsg.Size = UDim2.new(1, -10, 0, 30)
-		emptyMsg.BackgroundTransparency = 1
-		emptyMsg.Text = "No players available"
-		emptyMsg.Font = Enum.Font.Gotham
-		emptyMsg.TextColor3 = Color3.fromRGB(150,150,150)
-		emptyMsg.TextSize = 14
-		emptyMsg.Parent = scroll
-	end
-	autosize()
-end
-
-buildPlayerButtons()
-Players.PlayerAdded:Connect(buildPlayerButtons)
-Players.PlayerRemoving:Connect(buildPlayerButtons)
