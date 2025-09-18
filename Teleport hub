@@ -1,14 +1,16 @@
---// ArgianScript Control Panel (Fire Theme + Small Frame + Teleport + Minimize)
+--// ArgianScript Control Panel (Fire Theme + Small Frame + Teleport + Spectator + Minimize)
 --// Owner: ArgianScript
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Camera = workspace.CurrentCamera
 
 -- Auto Accept setup
 local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
 local AcceptedGifts = {}
 getgenv().AutoAccept = false
+local Spectating = nil
 
 -- Gift Listener
 for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
@@ -38,9 +40,9 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 360)
+MainFrame.Size = UDim2.new(0, 240, 0, 380)
 MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(235, 247, 255) -- light blue-ish base
+MainFrame.BackgroundColor3 = Color3.fromRGB(235, 247, 255)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
@@ -48,7 +50,7 @@ MainFrame.Parent = ScreenGui
 local UICornerMain = Instance.new("UICorner", MainFrame)
 UICornerMain.CornerRadius = UDim.new(0,12)
 
--- Gradient background (light blue tones)
+-- Gradient
 local UIGradient = Instance.new("UIGradient", MainFrame)
 UIGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 230, 255)),
@@ -62,13 +64,13 @@ Title.Size = UDim2.new(1, -35, 0, 35)
 Title.Position = UDim2.new(0,8,0,0)
 Title.BackgroundTransparency = 1
 Title.Text = "🔥 ArgianScript"
-Title.TextColor3 = Color3.fromRGB(30,120,230) -- light blue text
+Title.TextColor3 = Color3.fromRGB(30,120,230)
 Title.Font = Enum.Font.Fantasy
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Minimize Button (-)
+-- Minimize Button
 local MinBtn = Instance.new("TextButton")
 MinBtn.Size = UDim2.new(0,28,0,28)
 MinBtn.Position = UDim2.new(1,-32,0,4)
@@ -78,7 +80,6 @@ MinBtn.Text = "-"
 MinBtn.Font = Enum.Font.SourceSansBold
 MinBtn.TextSize = 20
 MinBtn.Parent = MainFrame
-
 local MinUICorner = Instance.new("UICorner", MinBtn)
 MinUICorner.CornerRadius = UDim.new(0,6)
 
@@ -91,7 +92,7 @@ MinBtn.MouseButton1Click:Connect(function()
                 v.Visible = false
             end
         end
-        MainFrame.Size = UDim2.new(0,220,0,40)
+        MainFrame.Size = UDim2.new(0,240,0,40)
         MinBtn.Text = "+"
     else
         for _, v in pairs(MainFrame:GetChildren()) do
@@ -99,7 +100,7 @@ MinBtn.MouseButton1Click:Connect(function()
                 v.Visible = true
             end
         end
-        MainFrame.Size = UDim2.new(0,220,0,360)
+        MainFrame.Size = UDim2.new(0,240,0,380)
         MinBtn.Text = "-"
     end
 end)
@@ -119,7 +120,7 @@ SwitchLabel.Parent = MainFrame
 local SwitchFrame = Instance.new("TextButton")
 SwitchFrame.Size = UDim2.new(0,45,0,22)
 SwitchFrame.Position = UDim2.new(0,150,0,47)
-SwitchFrame.BackgroundColor3 = Color3.fromRGB(200,230,255) -- light blue frame
+SwitchFrame.BackgroundColor3 = Color3.fromRGB(200,230,255)
 SwitchFrame.BorderSizePixel = 0
 SwitchFrame.Text = ""
 SwitchFrame.Parent = MainFrame
@@ -127,10 +128,9 @@ SwitchFrame.Parent = MainFrame
 local Knob = Instance.new("Frame")
 Knob.Size = UDim2.new(0,20,0,20)
 Knob.Position = UDim2.new(0,1,0,1)
-Knob.BackgroundColor3 = Color3.fromRGB(100,180,255) -- light blue knob
+Knob.BackgroundColor3 = Color3.fromRGB(100,180,255)
 Knob.BorderSizePixel = 0
 Knob.Parent = SwitchFrame
-
 local UICorner1 = Instance.new("UICorner", SwitchFrame)
 UICorner1.CornerRadius = UDim.new(0,12)
 local UICorner2 = Instance.new("UICorner", Knob)
@@ -148,9 +148,9 @@ local function ToggleSwitch()
 end
 SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
 
--- Teleport Player List
+-- Player List (Teleport + Spectate)
 local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Size = UDim2.new(1,-20,0,140)
+PlayerList.Size = UDim2.new(1,-20,0,180)
 PlayerList.Position = UDim2.new(0,10,0,110)
 PlayerList.BackgroundTransparency = 1
 PlayerList.ScrollBarThickness = 4
@@ -167,33 +167,60 @@ local function teleportToPlayer(target)
     end
 end
 
+local function spectatePlayer(target)
+    if Spectating == target then
+        -- Stop spectating
+        Camera.CameraSubject = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        Spectating = nil
+        warn("Stopped Spectating")
+    else
+        if target.Character and target.Character:FindFirstChildWhichIsA("Humanoid") then
+            Camera.CameraSubject = target.Character:FindFirstChildWhichIsA("Humanoid")
+            Spectating = target
+            warn("Spectating:", target.Name)
+        end
+    end
+end
+
 local function refreshPlayerList()
     for _, btn in pairs(PlayerList:GetChildren()) do
-        if btn:IsA("TextButton") then btn:Destroy() end
+        if btn:IsA("Frame") then btn:Destroy() end
     end
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1,-10,0,22)
-            Btn.BackgroundColor3 = Color3.fromRGB(200,230,255) -- light blue
-            Btn.TextColor3 = Color3.fromRGB(20,70,150)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = PlayerList
+            local Row = Instance.new("Frame")
+            Row.Size = UDim2.new(1,-10,0,24)
+            Row.BackgroundTransparency = 1
+            Row.Parent = PlayerList
 
-            local BtnCorner = Instance.new("UICorner", Btn)
+            local TeleBtn = Instance.new("TextButton")
+            TeleBtn.Size = UDim2.new(0.5,-5,1,0)
+            TeleBtn.Position = UDim2.new(0,0,0,0)
+            TeleBtn.BackgroundColor3 = Color3.fromRGB(200,230,255)
+            TeleBtn.TextColor3 = Color3.fromRGB(20,70,150)
+            TeleBtn.Font = Enum.Font.SourceSansBold
+            TeleBtn.TextSize = 12
+            TeleBtn.Text = "TP: "..plr.DisplayName
+            TeleBtn.Parent = Row
+            local BtnCorner = Instance.new("UICorner", TeleBtn)
             BtnCorner.CornerRadius = UDim.new(0,6)
-
-            Btn.MouseEnter:Connect(function()
-                Btn.BackgroundColor3 = Color3.fromRGB(150,210,255)
-            end)
-            Btn.MouseLeave:Connect(function()
-                Btn.BackgroundColor3 = Color3.fromRGB(200,230,255)
-            end)
-
-            Btn.MouseButton1Click:Connect(function()
+            TeleBtn.MouseButton1Click:Connect(function()
                 teleportToPlayer(plr)
+            end)
+
+            local SpecBtn = Instance.new("TextButton")
+            SpecBtn.Size = UDim2.new(0.5,-5,1,0)
+            SpecBtn.Position = UDim2.new(0.5,5,0,0)
+            SpecBtn.BackgroundColor3 = Color3.fromRGB(180,210,245)
+            SpecBtn.TextColor3 = Color3.fromRGB(20,70,150)
+            SpecBtn.Font = Enum.Font.SourceSansBold
+            SpecBtn.TextSize = 12
+            SpecBtn.Text = "👁 "..plr.DisplayName
+            SpecBtn.Parent = Row
+            local BtnCorner2 = Instance.new("UICorner", SpecBtn)
+            BtnCorner2.CornerRadius = UDim.new(0,6)
+            SpecBtn.MouseButton1Click:Connect(function()
+                spectatePlayer(plr)
             end)
         end
     end
@@ -208,23 +235,14 @@ refreshPlayerList()
 local LeaveButton = Instance.new("TextButton")
 LeaveButton.Size = UDim2.new(1,-20,0,28)
 LeaveButton.Position = UDim2.new(0,10,1,-32)
-LeaveButton.BackgroundColor3 = Color3.fromRGB(100,180,255) -- light blue leave
+LeaveButton.BackgroundColor3 = Color3.fromRGB(100,180,255)
 LeaveButton.TextColor3 = Color3.fromRGB(255,255,255)
 LeaveButton.Text = "❌ LEAVE KASI PALDO KANA"
 LeaveButton.Font = Enum.Font.SourceSansBold
 LeaveButton.TextSize = 13
 LeaveButton.Parent = MainFrame
-
 local LeaveCorner = Instance.new("UICorner", LeaveButton)
 LeaveCorner.CornerRadius = UDim.new(0,6)
-
-LeaveButton.MouseEnter:Connect(function()
-    LeaveButton.BackgroundColor3 = Color3.fromRGB(150,210,255)
-end)
-LeaveButton.MouseLeave:Connect(function()
-    LeaveButton.BackgroundColor3 = Color3.fromRGB(100,180,255)
-end)
-
 LeaveButton.MouseButton1Click:Connect(function()
     LocalPlayer:Kick("You have left the server.")
 end)
